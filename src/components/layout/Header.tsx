@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 
 const Header = () => {
@@ -35,8 +36,15 @@ const Header = () => {
   return (
     <header className="fixed w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-50 shadow-sm">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-          Ahmed Gharib
+        <Link href="/" className="flex items-center">
+          <Image 
+            src="/assets/images/dark.png" 
+            alt="Ahmed Gharib Logo" 
+            width={40} 
+            height={40} 
+            className="mr-2"
+          />
+          <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">Ahmed Gharib</span>
         </Link>
 
         {/* Desktop Navigation */}

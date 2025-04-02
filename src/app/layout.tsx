@@ -19,7 +19,12 @@ const firaCode = Fira_Code({
 
 export const metadata: Metadata = {
   title: 'Ahmed Gharib | Data Engineer & Analytics Professional',
-  description: 'Portfolio website of Ahmed Gharib, an experienced Data Engineer with expertise in Microsoft Azure, AWS, and Google Cloud platforms.'
+  description: 'Portfolio website of Ahmed Gharib, an experienced Data Engineer with expertise in Microsoft Azure, AWS, and Google Cloud platforms.',
+  icons: {
+    icon: '/assets/images/dark.png',
+    apple: '/assets/images/dark.png',
+    shortcut: '/assets/images/dark.png'
+  }
 }
 
 export default function RootLayout({
