@@ -1,0 +1,165 @@
+/* Custom styles for the portfolio website */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap');
+
+/* Custom font classes */
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-opensans {
+  font-family: 'Open Sans', sans-serif;
+}
+
+.font-firacode {
+  font-family: 'Fira Code', monospace;
+}
+
+/* Custom color variables */
+:root {
+  --primary-color: #0A66C2;
+  --primary-color-light: #E6F7FF;
+  --secondary-color: #F2A900;
+  --background-light: #F5F5F5;
+  --text-dark: #333333;
+  --text-medium: #666666;
+}
+
+/* Dark mode color variables */
+.dark {
+  --primary-color: #4D9EFF;
+  --primary-color-light: #1E3A5F;
+  --secondary-color: #FFB938;
+  --background-light: #1A1A1A;
+  --text-dark: #F5F5F5;
+  --text-medium: #BBBBBB;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.animate-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animate-delay-300 {
+  animation-delay: 0.3s;
+}
+
+/* Skill bar animation */
+@keyframes fillBar {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--skill-level);
+  }
+}
+
+.skill-bar {
+  animation: fillBar 1.5s ease-out forwards;
+}
+
+/* Timeline animations */
+.timeline-item {
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.5s ease-out;
+}
+
+.timeline-item.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-color);
+}
+
+/* Custom button styles */
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-color-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: var(--primary-color-light);
+  transform: translateY(-2px);
+}
+
+/* Card hover effects */
+.project-card {
+  transition: all 0.3s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Hero section gradient background */
+.hero-gradient {
+  background: linear-gradient(135deg, var(--primary-color-light) 0%, white 100%);
+}
+
+.dark .hero-gradient {
+  background: linear-gradient(135deg, var(--primary-color-light) 0%, #121212 100%);
+}
+
+/* Custom section spacing */
+.section-spacing {
+  padding: 6rem 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .section-spacing {
+    padding: 4rem 0;
+  }
+}
