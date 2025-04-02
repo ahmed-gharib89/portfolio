@@ -19,6 +19,22 @@ const HeroSection = () => {
     })
   };
 
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+    e.preventDefault();
+    const targetElement = document.querySelector(targetId);
+    
+    if (targetElement) {
+      // Scroll to the element with smooth animation
+      targetElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+
+      // Update URL without causing a jump
+      window.history.pushState(null, '', targetId);
+    }
+  };
+
   return (
     <AnimatedSection id="hero" className="min-h-screen flex items-center bg-gradient-to-b from-white to-gray-100 dark:from-gray-900 dark:to-gray-800 pt-20" delay={0}>
       <div className="container mx-auto px-4 py-16 md:py-24">
@@ -41,13 +57,14 @@ const HeroSection = () => {
                 animate="animate"
                 custom={0}
               >
-                <Link 
+                <a 
                   href="#projects" 
                   className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                  onClick={(e) => handleSmoothScroll(e, '#projects')}
                 >
                   View Projects
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+                </a>
               </motion.div>
               
               <motion.div
@@ -74,13 +91,14 @@ const HeroSection = () => {
                 animate="animate"
                 custom={2}
               >
-                <Link 
+                <a 
                   href="#contact" 
                   className="inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-md transition-colors"
+                  onClick={(e) => handleSmoothScroll(e, '#contact')}
                 >
                   Contact Me
                   <Mail className="ml-2 h-4 w-4" />
-                </Link>
+                </a>
               </motion.div>
             </div>
           </div>
