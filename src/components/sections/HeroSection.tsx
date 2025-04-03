@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Download, Mail } from 'lucide-react';
+import { ArrowRight, Download, Mail, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AnimatedSection from '../animation/AnimatedSection';
 
@@ -99,6 +99,21 @@ const HeroSection = () => {
                   Contact Me
                   <Mail className="ml-2 h-4 w-4" />
                 </a>
+              </motion.div>
+              
+              <motion.div
+                variants={buttonVariants}
+                initial="initial"
+                animate="animate"
+                custom={3}
+              >
+                <Link 
+                  href="/blog" 
+                  className="inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-md transition-colors"
+                >
+                  Read My Blog
+                  <BookOpen className="ml-2 h-4 w-4" />
+                </Link>
               </motion.div>
             </div>
           </div>
