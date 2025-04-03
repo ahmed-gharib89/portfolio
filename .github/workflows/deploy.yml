@@ -34,6 +34,6 @@ jobs:
           script: |
             cd ${{ secrets.DEPLOY_PATH || '/home/ubuntu/portfolio' }}
             git pull origin main
-            npm ci --production
+            npm ci 
             npm run build
             pm2 reload portfolio || pm2 start npm --name "portfolio" -- start

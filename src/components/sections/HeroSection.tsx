@@ -44,10 +44,10 @@ const HeroSection = () => {
               Ahmed Gharib
             </h1>
             <h2 className="text-2xl md:text-3xl text-blue-600 dark:text-blue-400 font-medium">
-              Principal Advanced Analytics Engineer
+              Senior Data Engineer at Raisa Energy
             </h2>
             <p className="text-lg text-gray-700 dark:text-gray-300 max-w-2xl">
-              Experienced Data Engineer with over 6 years of expertise in designing and implementing scalable data solutions across Microsoft Azure, AWS, and Google Cloud platforms. Skilled in building robust data pipelines and ETL processes.
+              Senior Data Engineer with over 6 years of expertise in designing and implementing scalable data solutions across Microsoft Azure, AWS, and Google Cloud platforms. Currently building data infrastructure and analytics solutions at Raisa Energy since March 2025.
             </p>
             
             <div className="flex flex-wrap gap-4 pt-4">

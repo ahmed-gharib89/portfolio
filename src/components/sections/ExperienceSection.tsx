@@ -5,9 +5,21 @@ import { Briefcase, Calendar } from 'lucide-react';
 const ExperienceSection = () => {
   const experiences = [
     {
+      company: 'Raisa Energy',
+      position: 'Senior Data Engineer',
+      period: 'Mar 2025 - Present',
+      responsibilities: [
+        'Lead the design and implementation of scalable data infrastructure and pipelines to support business intelligence and analytics initiatives.',
+        'Architect and optimize ETL processes to handle large-scale data integration across multiple sources and platforms.',
+        'Collaborate with data science teams to build robust data pipelines for machine learning models and advanced analytics.',
+        'Implement data governance strategies ensuring data quality, security, and compliance.',
+        'Drive the adoption of modern data engineering practices and technologies across the organization.'
+      ]
+    },
+    {
       company: 'ITWorx - Free Zone, Cairo',
       position: 'Principal Advanced Analytics Engineer',
-      period: 'Oct 2023 - Present',
+      period: 'Oct 2023 - Feb 2025',
       responsibilities: [
         'Spearhead the execution of complex analytics initiatives, leveraging expertise in data modeling, algorithm design, and advanced computational techniques.',
         'Provide thought leadership in the application of machine learning, statistical methodologies, and dynamic data visualization tools to solve business-critical challenges.',
