@@ -4,9 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -14,6 +17,13 @@ const Header = () => {
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
+    
+    // If not on homepage, navigate to homepage first
+    if (!isHomePage) {
+      window.location.href = `/${targetId}`;
+      return;
+    }
+    
     const targetElement = document.querySelector(targetId);
     
     if (targetElement) {
@@ -84,6 +94,14 @@ const Header = () => {
           >
             Skills
           </a>
+          <Link 
+            href="/blog"
+            className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+              pathname === '/blog' || pathname.startsWith('/blog/') ? 'text-blue-600 dark:text-blue-400' : ''
+            }`}
+          >
+            Blog
+          </Link>
           <a 
             href="#contact" 
             className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
@@ -142,6 +160,14 @@ const Header = () => {
             >
               Skills
             </a>
+            <Link 
+              href="/blog"
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/blog' || pathname.startsWith('/blog/') ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+            >
+              Blog
+            </Link>
             <a 
               href="#contact" 
               className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
