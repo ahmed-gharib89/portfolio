@@ -59,7 +59,7 @@ const HeroSection = () => {
               >
                 <a 
                   href="#projects" 
-                  className="w-44 justify-center inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                  className="w-40 justify-center inline-flex items-center px-3 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
                   onClick={(e) => handleSmoothScroll(e, '#projects')}
                 >
                   View Projects
@@ -75,7 +75,7 @@ const HeroSection = () => {
               >
                 <a 
                   href="/assets/files/Ahmed Gharib.pdf" 
-                  className="w-44 justify-center inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-md transition-colors"
+                  className="w-40 justify-center inline-flex items-center px-3 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-md transition-colors"
                   target="_blank"
                   rel="noopener noreferrer"
                   download
@@ -93,7 +93,7 @@ const HeroSection = () => {
               >
                 <a 
                   href="#contact" 
-                  className="w-44 justify-center inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-md transition-colors"
+                  className="w-40 justify-center inline-flex items-center px-3 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-md transition-colors"
                   onClick={(e) => handleSmoothScroll(e, '#contact')}
                 >
                   Contact Me
@@ -109,7 +109,7 @@ const HeroSection = () => {
               >
                 <Link 
                   href="/blog" 
-                  className="w-44 justify-center inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-md transition-colors"
+                  className="w-40 justify-center inline-flex items-center px-3 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-md transition-colors"
                 >
                   Read My Blog
                   <BookOpen className="ml-2 h-4 w-4" />
