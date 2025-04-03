@@ -124,7 +124,7 @@ const ContactSection = () => {
                 </h3>
                 <div className="flex space-x-4">
                   <a 
-                    href="https://linkedin.com/" 
+                    href="https://www.linkedin.com/in/agharib89/" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full"
@@ -135,7 +135,7 @@ const ContactSection = () => {
                     </svg>
                   </a>
                   <a 
-                    href="https://github.com/" 
+                    href="https://github.com/ahmed-gharib89"
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="bg-gray-800 hover:bg-gray-900 text-white p-2 rounded-full"
