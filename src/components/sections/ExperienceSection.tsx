@@ -110,7 +110,7 @@ const ExperienceSection = () => {
                 <div className="absolute left-0 md:left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full bg-blue-600 dark:bg-blue-400 z-10"></div>
                 
                 {/* Content */}
-                <div className="md:w-1/2 pl-8 md:pl-0 md:pr-12 md:text-right">
+                <div className="md:w-1/2 pl-8 md:pl-0 md:pr-12">
                   <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -125,7 +125,7 @@ const ExperienceSection = () => {
                     </div>
                     
                     {exp.responsibilities.length > 0 && (
-                      <ul className="text-gray-700 dark:text-gray-300 space-y-2 text-sm">
+                      <ul className="text-gray-700 dark:text-gray-300 space-y-2 text-sm text-left">
                         {exp.responsibilities.map((resp, idx) => (
                           <li key={idx} className="leading-relaxed">
                             {resp}
