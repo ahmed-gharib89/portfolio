@@ -4,7 +4,6 @@ A modern, responsive personal portfolio website built with Next.js, TypeScript, 
 
 ## Features
 
-- 🌓 Dark/Light mode toggle
 - 📱 Fully responsive design
 - 🚀 Server-side rendering with Next.js
 - 💅 Styled with Tailwind CSS
