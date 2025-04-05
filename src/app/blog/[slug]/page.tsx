@@ -1,15 +1,28 @@
-'use client';
-
-import React, { useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+// Removed 'use client' - This is now a React Server Component
+import React from 'react'; // useEffect, useParams, useRouter removed
+import { notFound } from 'next/navigation'; // Import notFound
+import { cache } from 'react'; // Import cache for data fetching deduplication
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnimatedSection from '@/components/animation/AnimatedSection';
 import Link from 'next/link';
 import { Calendar, Clock, Share2, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
 
+// --- Type Definition ---
+interface BlogPost {
+  slug: string; // Added slug here for consistency after fetching
+  title: string;
+  date: string;
+  author: string;
+  category: string;
+  content: string;
+  readingTime?: string; // Optional property
+  image?: string;       // Optional property
+  featured?: boolean;   // Optional property
+}
+
 // Sample blog posts data - in a real app this would be fetched from a database or API
-const blogPosts = {
+const blogPosts: Record<string, Omit<BlogPost, 'slug'>> = { // Use Omit to exclude slug from the source definition
   'modern-data-engineering-practices': {
     title: 'Modern Data Engineering Practices in 2025',
     date: 'April 1, 2025',
@@ -1822,7 +1835,7 @@ const blogPosts = {
     author: 'Ahmed Gharib', // Assuming author for consistency
     category: 'Data Engineering', // Inferred from tags
     // excerpt: "Discover how dbt and Snowflake combine to create a powerful, scalable, and maintainable data pipeline solution. Learn best practices, optimization techniques, and the future potential of this modern data stack duo in 2025.", // Excerpt not used in current structure
-    Image: "/assets/images/data-engineering.jpg", // Cover image not used in current structure
+    image: "/assets/images/data-engineering.jpg", // Corrected property name
     readingTime: '10 min',
     content: `
       <h1>Optimizing the Modern Data Stack: Leveraging dbt with Snowflake</h1>
@@ -1890,37 +1903,89 @@ const blogPosts = {
   }
 };
 
-export default function BlogPostPage() {
-  const params = useParams();
-  const router = useRouter();
-  const slug = params.slug as string;
-  
-  // Get the current post data
-  const post = blogPosts[slug];
-  
-  // Find next and previous posts
-  const getAllSlugs = () => Object.keys(blogPosts);
-  const slugs = getAllSlugs();
-  const currentIndex = slugs.findIndex(s => s === slug);
-  
-  const prevPost = currentIndex > 0 ? 
-    { slug: slugs[currentIndex - 1], title: blogPosts[slugs[currentIndex - 1]].title } : 
-    null;
-    
-  const nextPost = currentIndex < slugs.length - 1 ? 
-    { slug: slugs[currentIndex + 1], title: blogPosts[slugs[currentIndex + 1]].title } : 
-    null;
-  
-  // If post doesn't exist, redirect to blog index
-  useEffect(() => {
-    if (!post) {
-      router.push('/blog');
-    }
-  }, [post, router]);
-  
-  if (!post) {
-    return null;
+// --- Data Fetching Logic (Ideally move to lib/blog-api.ts) ---
+
+// Using React.cache for deduplication within a single request/render
+export const getAllPostSlugs = cache(async () => {
+  console.log(`(Server) Fetching all slugs`); // Log for debugging
+  // Simulate async operation if needed
+  // await new Promise(resolve => setTimeout(resolve, 50));
+  return Object.keys(blogPosts);
+});
+
+export const getPostBySlug = cache(async (slug: string): Promise<BlogPost | null> => { // Add return type annotation
+  console.log(`(Server) Fetching post: ${slug}`); // Log for debugging
+  // Simulate async operation if needed
+  // await new Promise(resolve => setTimeout(resolve, 50));
+  const postData = blogPosts[slug as keyof typeof blogPosts];
+  if (!postData) {
+    return null; // Return null if not found
   }
+  // Combine the slug with the rest of the post data
+  return { ...postData, slug };
+});
+
+// --- SSG Implementation ---
+
+// Generate static paths at build time
+export async function generateStaticParams() {
+  const slugs = await getAllPostSlugs();
+  return slugs.map((slug) => ({
+    slug: slug,
+  }));
+}
+
+// Ensure only statically generated paths are allowed (optional, for full SSG)
+export const dynamicParams = false;
+
+// --- Metadata Generation ---
+
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const post = await getPostBySlug(params.slug);
+
+  if (!post) {
+    return {
+      title: 'Post Not Found',
+    };
+  }
+
+  return {
+    title: post.title,
+    description: `Read the blog post titled: ${post.title}`, // Basic description
+    // Add other metadata like open graph tags if needed
+  };
+}
+
+// --- Page Component (React Server Component) ---
+
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const { slug } = params; // Get slug from params passed by Next.js
+
+  // Fetch current post data server-side (uses cache)
+  const post = await getPostBySlug(slug);
+
+  // Handle post not found server-side
+  if (!post) {
+    notFound(); // Trigger 404 page
+  }
+
+  // Fetch all slugs to determine next/previous posts (uses cache)
+  const slugs = await getAllPostSlugs();
+  const currentIndex = slugs.findIndex(s => s === slug);
+
+  const prevSlug = currentIndex > 0 ? slugs[currentIndex - 1] : null;
+  const nextSlug = currentIndex < slugs.length - 1 ? slugs[currentIndex + 1] : null;
+
+  // Fetch titles for prev/next posts (could be optimized by fetching all titles once)
+  const prevPostMeta = prevSlug ? await getPostBySlug(prevSlug) : null;
+  const nextPostMeta = nextSlug ? await getPostBySlug(nextSlug) : null;
+
+  const prevPost = prevPostMeta ? { slug: prevPostMeta.slug, title: prevPostMeta.title } : null;
+  const nextPost = nextPostMeta ? { slug: nextPostMeta.slug, title: nextPostMeta.title } : null;
+
+  // No need for client-side check or redirection anymore
+  // The component only renders if 'post' is found
+  // Removed misplaced closing brace
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -1981,7 +2046,7 @@ export default function BlogPostPage() {
                 </button>
               </div>
               
-              <article className="prose prose-lg dark:prose-invert max-w-none">
+              <article className="prose prose-lg dark:prose-invert max-w-none"> {/* Apply prose styles */}
                 <div dangerouslySetInnerHTML={{ __html: post.content }} />
               </article>
               
