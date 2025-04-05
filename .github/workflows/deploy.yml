@@ -32,8 +32,19 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT || 22 }}
           script: |
+            # Stop the current process if it's running
+            echo "Stopping current process..."
+            pm2 stop portfolio || true
             cd ${{ secrets.DEPLOY_PATH || '/home/ubuntu/portfolio' }}
+            # Pull the latest code from the repository
+            echo "Pulling latest code..."
             git pull origin main
+            # Install dependencies and build the project
+            echo "Installing dependencies and building the project..."
             npm ci 
+            # Build the project
+            echo "Building the project..."
             npm run build
+            # Start the application using PM2
+            echo "Starting the application..."
             pm2 reload portfolio || pm2 start npm --name "portfolio" -- start
