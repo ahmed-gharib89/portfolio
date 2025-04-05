@@ -164,15 +164,37 @@ const blogPosts = [
     readingTime: '7 min',
     category: 'Data Governance',
     image: '/assets/images/ethical-ai.jpg',
+  },
+  {
+    id: 16,
+    slug: 'optimizing-modern-data-stack-dbt-snowflake',
+    title: 'Optimizing the Modern Data Stack: Leveraging dbt with Snowflake',
+    excerpt: 'Discover how dbt and Snowflake combine to create a powerful, scalable, and maintainable data pipeline solution with best practices and optimization techniques.',
+    date: 'April 5, 2025',
+    readingTime: '10 min',
+    category: 'Data Engineering',
+    image: '/assets/images/data-engineering.jpg',
+    featured: true,
+  },
+  {
+    id: 17,
+    slug: 'the-rise-of-large-action-models',
+    title: 'The Rise of Large Action Models: Redefining AI from Text to Action',
+    excerpt: 'Explore how Large Action Models (LAMs) are extending beyond text generation to perform complex actions, revolutionizing automation and human-AI interaction across industries.',
+    date: 'April 5, 2025',
+    readingTime: '15 min',
+    category: 'AI & Data Engineering',
+    image: '/assets/images/large-action-models.jpg',
+    featured: true,
   }
 ];
 
 // Expanded blog categories for filtering
 const categories = [
-  'All Categories', 
-  'Data Engineering', 
-  'AI & Data Engineering', 
-  'Data Architecture', 
+  'All Categories',
+  'Data Engineering',
+  'AI & Data Engineering',
+  'Data Architecture',
   'Data Governance'
 ];
 
@@ -191,7 +213,7 @@ export default function Blog() {
   const [displayCount, setDisplayCount] = useState(6);
 
   const postsPerPage = 6;
-  
+
   // Reset page when category or search changes
   useEffect(() => {
     setCurrentPage(1);
@@ -202,8 +224,8 @@ export default function Blog() {
     // First filter by category and search
     .filter(post => {
       const matchesCategory = selectedCategory === 'All Categories' || post.category === selectedCategory;
-      const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     })
     // Then sort based on selected option
@@ -235,7 +257,7 @@ export default function Blog() {
 
   // Function to generate a placeholder gradient background based on category
   const getCategoryColor = (category) => {
-    switch(category) {
+    switch (category) {
       case 'Data Engineering':
         return 'from-blue-400 to-blue-600';
       case 'AI & Data Engineering':
@@ -257,7 +279,7 @@ export default function Blog() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <Header />
-      
+
       <main className="pt-24 pb-16">
         <AnimatedSection className="py-12 bg-gray-50 dark:bg-gray-800">
           <div className="container mx-auto px-4">
@@ -269,7 +291,7 @@ export default function Blog() {
             </p>
           </div>
         </AnimatedSection>
-        
+
         {/* Featured Posts Section */}
         <section className="py-12 bg-white dark:bg-gray-900">
           <div className="container mx-auto px-4">
@@ -277,7 +299,7 @@ export default function Blog() {
               <TrendingUp className="mr-2 h-6 w-6 text-blue-500" />
               Featured Articles
             </h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {blogPosts
                 .filter(post => post.featured)
@@ -323,7 +345,7 @@ export default function Blog() {
             </div>
           </div>
         </section>
-        
+
         <section className="py-12">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row gap-8">
@@ -344,7 +366,7 @@ export default function Blog() {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                       Categories
@@ -354,11 +376,10 @@ export default function Blog() {
                         <li key={index}>
                           <button
                             onClick={() => setSelectedCategory(category)}
-                            className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                              selectedCategory === category
+                            className={`w-full text-left px-3 py-2 rounded-md transition-colors ${selectedCategory === category
                                 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
                                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                            }`}
+                              }`}
                           >
                             {category}
                           </button>
@@ -366,7 +387,7 @@ export default function Blog() {
                       ))}
                     </ul>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                       Sort By
@@ -383,7 +404,7 @@ export default function Blog() {
                       ))}
                     </select>
                   </div>
-                  
+
                   <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                       Subscribe to Newsletter
@@ -402,7 +423,7 @@ export default function Blog() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Blog posts */}
               <div className="w-full md:w-3/4">
                 {processedPosts.length > 0 ? (
@@ -415,7 +436,7 @@ export default function Blog() {
                         {processedPosts.length} {processedPosts.length === 1 ? 'article' : 'articles'} found
                       </p>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {currentPosts.map((post) => (
                         <Link href={`/blog/${post.slug}`} key={post.id} className="group">
@@ -458,7 +479,7 @@ export default function Blog() {
                         </Link>
                       ))}
                     </div>
-                    
+
                     {/* Pagination */}
                     {totalPages > 1 && (
                       <div className="mt-12 flex justify-center">
@@ -466,23 +487,22 @@ export default function Blog() {
                           <button
                             onClick={() => paginate(Math.max(1, currentPage - 1))}
                             disabled={currentPage === 1}
-                            className={`p-2 rounded-md ${
-                              currentPage === 1 
-                                ? 'text-gray-400 cursor-not-allowed' 
+                            className={`p-2 rounded-md ${currentPage === 1
+                                ? 'text-gray-400 cursor-not-allowed'
                                 : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                            }`}
+                              }`}
                           >
                             <ArrowLeft className="h-5 w-5" />
                           </button>
-                          
+
                           {[...Array(totalPages)].map((_, index) => {
                             const pageNumber = index + 1;
                             // Show first page, last page, current page, and pages around current
-                            const shouldShow = 
-                              pageNumber === 1 || 
+                            const shouldShow =
+                              pageNumber === 1 ||
                               pageNumber === totalPages ||
                               Math.abs(pageNumber - currentPage) <= 1;
-                              
+
                             if (!shouldShow) {
                               // Show ellipsis but avoid duplicate ellipsis
                               if (pageNumber === 2 || pageNumber === totalPages - 1) {
@@ -492,30 +512,28 @@ export default function Blog() {
                               }
                               return null;
                             }
-                            
+
                             return (
                               <button
                                 key={pageNumber}
                                 onClick={() => paginate(pageNumber)}
-                                className={`w-10 h-10 flex items-center justify-center rounded-md ${
-                                  currentPage === pageNumber
+                                className={`w-10 h-10 flex items-center justify-center rounded-md ${currentPage === pageNumber
                                     ? 'bg-blue-600 text-white'
                                     : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                                }`}
+                                  }`}
                               >
                                 {pageNumber}
                               </button>
                             );
                           })}
-                          
+
                           <button
                             onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
                             disabled={currentPage === totalPages}
-                            className={`p-2 rounded-md ${
-                              currentPage === totalPages 
-                                ? 'text-gray-400 cursor-not-allowed' 
+                            className={`p-2 rounded-md ${currentPage === totalPages
+                                ? 'text-gray-400 cursor-not-allowed'
                                 : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                            }`}
+                              }`}
                           >
                             <ArrowRight className="h-5 w-5" />
                           </button>
@@ -536,7 +554,7 @@ export default function Blog() {
           </div>
         </section>
       </main>
-      
+
       <Footer />
     </div>
   );
