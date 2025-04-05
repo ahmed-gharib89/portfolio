@@ -18,6 +18,7 @@ const firaCode = Fira_Code({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.agharib.com'),
   title: 'Ahmed Gharib | Data Engineer & Analytics Professional',
   description: 'Portfolio website of Ahmed Gharib, an experienced Data Engineer with expertise in Microsoft Azure, AWS, and Google Cloud platforms.',
   icons: {
