@@ -7,7 +7,7 @@ const ProjectsSection = () => {
   const projects = [
     {
       title: 'Core42 - ADX Digital Transformation',
-      period: 'Jan 2024 - Present',
+      period: 'Jan 2024 - Dec 2024',
       description: 'Digital transformation initiative for Abu Dhabi Securities Exchange (ADX) to modernize infrastructure and enhance market accessibility.',
       achievements: [
         'Enhanced Azure SQL Database performance by optimizing read queries',
