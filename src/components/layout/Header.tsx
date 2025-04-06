@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -58,67 +59,75 @@ const Header = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex space-x-8">
-          <a 
-            href="#hero" 
-            className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-            onClick={(e) => handleSmoothScroll(e, '#hero')}
-          >
-            Home
-          </a>
-          <a 
-            href="#about" 
-            className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-            onClick={(e) => handleSmoothScroll(e, '#about')}
-          >
-            About
-          </a>
-          <a 
-            href="#experience" 
-            className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-            onClick={(e) => handleSmoothScroll(e, '#experience')}
-          >
-            Experience
-          </a>
-          <a 
-            href="#projects" 
-            className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-            onClick={(e) => handleSmoothScroll(e, '#projects')}
-          >
-            Projects
-          </a>
-          <a 
-            href="#skills" 
-            className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-            onClick={(e) => handleSmoothScroll(e, '#skills')}
-          >
-            Skills
-          </a>
-          <Link 
-            href="/blog"
-            className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-              pathname === '/blog' || pathname.startsWith('/blog/') ? 'text-blue-600 dark:text-blue-400' : ''
-            }`}
-          >
-            Blog
-          </Link>
-          <a 
-            href="#contact" 
-            className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-            onClick={(e) => handleSmoothScroll(e, '#contact')}
-          >
-            Contact
-          </a>
-        </nav>
+        <div className="hidden md:flex items-center">
+          <nav className="flex space-x-8 mr-4">
+            <a 
+              href="#hero" 
+              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+              onClick={(e) => handleSmoothScroll(e, '#hero')}
+            >
+              Home
+            </a>
+            <a 
+              href="#about" 
+              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+              onClick={(e) => handleSmoothScroll(e, '#about')}
+            >
+              About
+            </a>
+            <a 
+              href="#experience" 
+              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+              onClick={(e) => handleSmoothScroll(e, '#experience')}
+            >
+              Experience
+            </a>
+            <a 
+              href="#projects" 
+              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+              onClick={(e) => handleSmoothScroll(e, '#projects')}
+            >
+              Projects
+            </a>
+            <a 
+              href="#skills" 
+              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+              onClick={(e) => handleSmoothScroll(e, '#skills')}
+            >
+              Skills
+            </a>
+            <Link 
+              href="/blog"
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/blog' || pathname.startsWith('/blog/') ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+            >
+              Blog
+            </Link>
+            <a 
+              href="#contact" 
+              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+              onClick={(e) => handleSmoothScroll(e, '#contact')}
+            >
+              Contact
+            </a>
+          </nav>
+          
+          {/* Theme Toggle */}
+          <ThemeToggle />
+        </div>
 
-        {/* Mobile Menu Button */}
-        <button 
-          className="md:hidden text-gray-700 dark:text-gray-200"
-          onClick={toggleMenu}
-          aria-label="Toggle menu"
-        >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile Header Actions */}
+        <div className="md:hidden flex items-center space-x-2">
+          <ThemeToggle />
+          <button 
+            className="text-gray-700 dark:text-gray-200"
+            onClick={toggleMenu}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Navigation */}
