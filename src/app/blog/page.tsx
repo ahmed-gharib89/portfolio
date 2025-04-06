@@ -11,6 +11,17 @@ import { ArrowLeft, ArrowRight, TrendingUp, Calendar, Clock } from 'lucide-react
 // Enhanced blog data with more posts
 const blogPosts = [
   {
+    id: 0,
+    slug: 'vibe-coding-future-of-development',
+    title: 'Vibe Coding: The Future of Software Development in 2025',
+    excerpt: 'Discover how vibe coding is transforming software development by allowing developers to create applications through natural language prompts and AI-powered code generation.',
+    date: 'April 6, 2025',
+    readingTime: '12 min',
+    category: 'AI & Data Engineering',
+    image: '/assets/images/vibe-coding.jpg',
+    featured: true,
+  },
+  {
     id: 1,
     slug: 'modern-data-engineering-practices',
     title: 'Modern Data Engineering Practices in 2025',
