@@ -12,7 +12,7 @@ git pull origin main
 
 # Install dependencies
 echo "Installing dependencies..."
-npm ci --production
+npm ci # --production
 
 # Build the project
 echo "Building the project..."
