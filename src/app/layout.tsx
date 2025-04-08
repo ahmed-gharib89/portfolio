@@ -26,6 +26,10 @@ export const metadata: Metadata = {
     icon: '/assets/images/dark.png',
     apple: '/assets/images/dark.png',
     shortcut: '/assets/images/dark.png'
+  },
+  alternates: {
+    // Using proper format for canonical URL
+    canonical: 'https://agharib.com/'
   }
 }
 

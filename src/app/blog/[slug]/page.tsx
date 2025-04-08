@@ -34,7 +34,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   return {
     title: post.title,
-    description: `Read the blog post titled: ${post.title}`, // Basic description
+    description: `Read about ${post.category}: ${post.title}. Written by ${post.author} on ${post.date}.`,
+    alternates: {
+      canonical: `https://agharib.com/blog/${params.slug}`
+    },
     // Add other metadata like open graph tags if needed
   };
 }
