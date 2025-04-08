@@ -39,3 +39,5 @@ next-env.d.ts
 
 run.sh
 server-setup.sh
+
+copilot-instructions.md
