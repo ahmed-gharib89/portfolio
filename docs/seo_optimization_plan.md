@@ -187,6 +187,55 @@ Disallow: /assets/files/
 | T.4 | LOW | Optimize font loading | 2-3 hours | Low | None |
 | T.5 | LOW | Implement caching strategies | 3-4 hours | Low | None |
 
+#### Task Details
+
+##### T.1: Consolidate JavaScript files
+- Audit current JavaScript usage across the portfolio website
+- Bundle related JavaScript files using Next.js built-in bundling
+- Implement code splitting for route-based components
+- Remove any duplicate or unused JavaScript code
+- Configure proper module chunking strategy
+- Implement dynamic imports for non-critical JavaScript
+- Test performance improvements using Lighthouse and WebPageTest
+
+##### T.2: Implement resource hints
+- Analyze critical resources needed for initial page load
+- Add preload hints for critical CSS and fonts
+- Implement DNS prefetch for third-party domains
+- Add preconnect for essential third-party resources
+- Configure prefetch for pages likely to be visited next
+- Ensure resource hints are properly prioritized
+- Verify implementation with network waterfall analysis
+
+##### T.3: Add comprehensive schema markup
+- Expand on base structured data from task 1.4
+- Implement BreadcrumbList schema across site navigation
+- Add JobPosting schema for work experience entries
+- Implement Project schema for portfolio items
+- Add Article schema with all required properties for blog posts
+- Include PersonSkill schema for the skills section
+- Validate all schema implementations with Schema.org Validator
+- Test rich results appearance with Google's Rich Results Test
+
+##### T.4: Optimize font loading
+- Audit current font loading strategy and performance
+- Implement font-display: swap for text visibility during loading
+- Convert fonts to WOFF2 format for optimal compression
+- Subset fonts to include only necessary characters
+- Self-host critical fonts instead of using external providers
+- Implement font preloading for critical text
+- Use system font fallbacks in font-family stack
+- Test font loading performance improvements
+
+##### T.5: Implement caching strategies
+- Configure optimal Cache-Control headers for different asset types
+- Implement ETags for server validation
+- Set up service worker for offline caching
+- Configure proper expiration times for static assets
+- Implement versioning strategy for cache busting
+- Set up server-side caching rules
+- Test caching implementation with browser developer tools
+
 ## Measurement & Tracking
 
 To ensure the effectiveness of our SEO optimization efforts, we will track the following metrics:

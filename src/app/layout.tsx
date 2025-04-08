@@ -30,6 +30,18 @@ export const metadata: Metadata = {
   alternates: {
     // Using proper format for canonical URL
     canonical: 'https://agharib.com/'
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1
+    }
   }
 }
 
