@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Montserrat, Open_Sans, Fira_Code } from 'next/font/google'
 import './globals.css'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import StructuredData from '@/components/StructuredData'
 
 const montserrat = Montserrat({
   variable: '--font-montserrat',
@@ -57,6 +58,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <StructuredData />
       </head>
       <GoogleAnalytics measurementId="G-0JS4YKCBHY" />
       <body className={`${montserrat.variable} ${openSans.variable} ${firaCode.variable} font-opensans antialiased`}>{children}</body>
