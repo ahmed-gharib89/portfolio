@@ -10,22 +10,24 @@ import ThemeToggle from '@/components/ThemeToggle';
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
-  const isHomePage = pathname === '/';
+  // Consider all section paths as home page to ensure navigation works consistently
+  const sectionPaths = ['/', '/home', '/about', '/experience', '/projects', '/skills', '/contact'];
+  const isHomePage = sectionPaths.includes(pathname);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, sectionPath: string, sectionId: string) => {
     e.preventDefault();
     
-    // If not on homepage, navigate to homepage first
+    // If not on homepage, navigate to homepage with section path
     if (!isHomePage) {
-      window.location.href = `/${targetId}`;
+      window.location.href = sectionPath;
       return;
     }
     
-    const targetElement = document.querySelector(targetId);
+    const targetElement = document.querySelector(`#${sectionId}`);
     
     if (targetElement) {
       // Close menu if open
@@ -39,8 +41,8 @@ const Header = () => {
         block: 'start',
       });
 
-      // Update URL without causing a jump
-      window.history.pushState(null, '', targetId);
+      // Update URL without causing a page reload
+      window.history.pushState(null, '', sectionPath);
     }
   };
 
@@ -62,37 +64,47 @@ const Header = () => {
         <div className="hidden md:flex items-center">
           <nav className="flex space-x-8 mr-4">
             <a 
-              href="#hero" 
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => handleSmoothScroll(e, '#hero')}
+              href="/home" 
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/home' ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+              onClick={(e) => handleSmoothScroll(e, '/home', 'hero')}
             >
               Home
             </a>
             <a 
-              href="#about" 
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => handleSmoothScroll(e, '#about')}
+              href="/about" 
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/about' ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+              onClick={(e) => handleSmoothScroll(e, '/about', 'about')}
             >
               About
             </a>
             <a 
-              href="#experience" 
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => handleSmoothScroll(e, '#experience')}
+              href="/experience" 
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/experience' ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+              onClick={(e) => handleSmoothScroll(e, '/experience', 'experience')}
             >
               Experience
             </a>
             <a 
-              href="#projects" 
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => handleSmoothScroll(e, '#projects')}
+              href="/projects" 
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/projects' ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+              onClick={(e) => handleSmoothScroll(e, '/projects', 'projects')}
             >
               Projects
             </a>
             <a 
-              href="#skills" 
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => handleSmoothScroll(e, '#skills')}
+              href="/skills" 
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/skills' ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+              onClick={(e) => handleSmoothScroll(e, '/skills', 'skills')}
             >
               Skills
             </a>
@@ -105,9 +117,11 @@ const Header = () => {
               Blog
             </Link>
             <a 
-              href="#contact" 
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => handleSmoothScroll(e, '#contact')}
+              href="/contact" 
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/contact' ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+              onClick={(e) => handleSmoothScroll(e, '/contact', 'contact')}
             >
               Contact
             </a>
@@ -135,37 +149,47 @@ const Header = () => {
         <div className="md:hidden bg-white dark:bg-gray-900 shadow-md">
           <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
             <a 
-              href="#hero" 
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => handleSmoothScroll(e, '#hero')}
+              href="/home" 
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/home' ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+              onClick={(e) => handleSmoothScroll(e, '/home', 'hero')}
             >
               Home
             </a>
             <a 
-              href="#about" 
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => handleSmoothScroll(e, '#about')}
+              href="/about" 
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/about' ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+              onClick={(e) => handleSmoothScroll(e, '/about', 'about')}
             >
               About
             </a>
             <a 
-              href="#experience" 
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => handleSmoothScroll(e, '#experience')}
+              href="/experience" 
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/experience' ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+              onClick={(e) => handleSmoothScroll(e, '/experience', 'experience')}
             >
               Experience
             </a>
             <a 
-              href="#projects" 
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => handleSmoothScroll(e, '#projects')}
+              href="/projects" 
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/projects' ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+              onClick={(e) => handleSmoothScroll(e, '/projects', 'projects')}
             >
               Projects
             </a>
             <a 
-              href="#skills" 
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => handleSmoothScroll(e, '#skills')}
+              href="/skills" 
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/skills' ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+              onClick={(e) => handleSmoothScroll(e, '/skills', 'skills')}
             >
               Skills
             </a>
@@ -178,9 +202,11 @@ const Header = () => {
               Blog
             </Link>
             <a 
-              href="#contact" 
-              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-              onClick={(e) => handleSmoothScroll(e, '#contact')}
+              href="/contact" 
+              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
+                pathname === '/contact' ? 'text-blue-600 dark:text-blue-400' : ''
+              }`}
+              onClick={(e) => handleSmoothScroll(e, '/contact', 'contact')}
             >
               Contact
             </a>

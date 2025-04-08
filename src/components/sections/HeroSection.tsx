@@ -19,9 +19,9 @@ const HeroSection = () => {
     })
   };
 
-  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, sectionPath: string, sectionId: string) => {
     e.preventDefault();
-    const targetElement = document.querySelector(targetId);
+    const targetElement = document.querySelector(`#${sectionId}`);
     
     if (targetElement) {
       // Scroll to the element with smooth animation
@@ -30,8 +30,8 @@ const HeroSection = () => {
         block: 'start',
       });
 
-      // Update URL without causing a jump
-      window.history.pushState(null, '', targetId);
+      // Update URL without causing a page reload
+      window.history.pushState(null, '', sectionPath);
     }
   };
 
@@ -58,9 +58,9 @@ const HeroSection = () => {
                 custom={0}
               >
                 <a 
-                  href="#projects" 
+                  href="/projects" 
                   className="w-40 justify-center inline-flex items-center px-3 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
-                  onClick={(e) => handleSmoothScroll(e, '#projects')}
+                  onClick={(e) => handleSmoothScroll(e, '/projects', 'projects')}
                 >
                   View Projects
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -92,9 +92,9 @@ const HeroSection = () => {
                 custom={2}
               >
                 <a 
-                  href="#contact" 
+                  href="/contact" 
                   className="w-40 justify-center inline-flex items-center px-3 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-md transition-colors"
-                  onClick={(e) => handleSmoothScroll(e, '#contact')}
+                  onClick={(e) => handleSmoothScroll(e, '/contact', 'contact')}
                 >
                   Contact Me
                   <Mail className="ml-2 h-4 w-4" />
