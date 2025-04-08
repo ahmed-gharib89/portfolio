@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import ThemeToggle from '@/components/ThemeToggle';
+import ThemeToggle from '@/components/ThemeToggleWrapper';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
