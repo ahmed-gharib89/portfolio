@@ -5,8 +5,14 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AnimatedSection from '@/components/animation/AnimatedSection';
 import Link from 'next/link';
-import { Calendar, Clock, Share2, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import { getAllPostSlugs, getPostBySlug, BlogPost } from '@/lib/blog-api';
+import BlogJsonLd from '@/components/blog/BlogJsonLd';
+import dynamic from 'next/dynamic';
+
+// Client components need to be dynamically imported
+const BlogPostLayout = dynamic(() => import('@/components/blog/BlogPostLayout'), { ssr: false });
+const SocialShare = dynamic(() => import('@/components/blog/SocialShare'), { ssr: false });
 
 // --- SSG Implementation ---
 
@@ -69,73 +75,81 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   const prevPost = prevPostMeta ? { slug: prevPostMeta.slug, title: prevPostMeta.title } : null;
   const nextPost = nextPostMeta ? { slug: nextPostMeta.slug, title: nextPostMeta.title } : null;
 
-  // No need for client-side check or redirection anymore
-  // The component only renders if 'post' is found
-  // Removed misplaced closing brace
+  // Get the canonical URL for the blog post
+  const baseUrl = 'https://agharib.com';
+  const canonicalUrl = `${baseUrl}/blog/${slug}`;
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      {/* Add JSON-LD for SEO */}
+      <BlogJsonLd post={post} url={canonicalUrl} />
+
       <Header />
-      
+
       <main className="pt-24 pb-16">
         <AnimatedSection className="py-12 bg-gray-50 dark:bg-gray-800">
           <div className="container mx-auto px-4">
-            <Link 
+            <Link
               href="/blog"
               className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-6"
             >
               ← Back to all articles
             </Link>
-            
+
             <div className="max-w-4xl mx-auto">
               <div className="mb-4">
                 <span className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm">
                   {post.category}
                 </span>
               </div>
-              
+
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
                 {post.title}
               </h1>
-              
-              <div className="flex flex-wrap items-center gap-4 text-gray-500 dark:text-gray-400 mb-8">
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <span>{post.date}</span>
-                </div>
-                {post.readingTime && (
+
+              <div className="flex flex-wrap items-center justify-between mb-8">
+                <div className="flex flex-wrap items-center gap-4 text-gray-500 dark:text-gray-400">
                   <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-2" />
-                    <span>{post.readingTime} read</span>
+                    <Calendar className="h-4 w-4 mr-2" />
+                    <span>{post.date}</span>
                   </div>
-                )}
-                <div className="flex items-center">
-                  <span>By {post.author}</span>
+                  {post.readingTime && (
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-2" />
+                      <span>{post.readingTime} read</span>
+                    </div>
+                  )}
+                  <div className="flex items-center">
+                    <span>By {post.author}</span>
+                  </div>
+                </div>
+
+                {/* Social Share - Both Desktop and Mobile */}
+                <div>
+                  <SocialShare title={post.title} slug={slug} />
                 </div>
               </div>
             </div>
           </div>
         </AnimatedSection>
-        
+
         <section className="py-12">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              {/* Share and save buttons */}
-              <div className="flex justify-end mb-8 space-x-4">
-                <button className="flex items-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
-                  <Share2 className="h-5 w-5 mr-1" />
-                  <span className="text-sm">Share</span>
-                </button>
-                <button className="flex items-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
-                  <Bookmark className="h-5 w-5 mr-1" />
-                  <span className="text-sm">Save</span>
-                </button>
-              </div>
-              
-              <article className="prose prose-lg dark:prose-invert max-w-none"> {/* Apply prose styles */}
+            <BlogPostLayout title={post.title} slug={slug}>
+              {post.image && (
+                <div className="mb-8 rounded-lg overflow-hidden relative h-96">
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              <article className="prose prose-lg dark:prose-invert max-w-none blog-content">
                 <div dangerouslySetInnerHTML={{ __html: post.content }} />
               </article>
-              
+
               {/* Author info */}
               <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
@@ -153,7 +167,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                   </div>
                 </div>
               </div>
-              
+
               {/* Previous/Next article navigation */}
               <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex flex-col md:flex-row justify-between">
@@ -170,7 +184,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                       </div>
                     </Link>
                   )}
-                  
+
                   {nextPost && (
                     <Link href={`/blog/${nextPost.slug}`} className="group md:text-right">
                       <div className="flex items-center justify-end text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400">
@@ -186,11 +200,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                   )}
                 </div>
               </div>
-            </div>
+            </BlogPostLayout>
           </div>
         </section>
       </main>
-      
+
       <Footer />
     </div>
   );

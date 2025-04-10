@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Montserrat, Open_Sans, Fira_Code } from 'next/font/google'
 import './globals.css'
+import '@/styles/custom-scrollbar.css'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import StructuredData from '@/components/StructuredData'
 
@@ -61,7 +62,7 @@ export default function RootLayout({
                 try {
                   const savedTheme = localStorage.getItem('theme');
                   const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  
+
                   if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
                     document.documentElement.classList.add('dark');
                   } else {

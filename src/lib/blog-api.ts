@@ -10,6 +10,7 @@ export interface BlogPost {
   author: string;
   category: string;
   content: string;
+  excerpt?: string;
   readingTime?: string;
   image?: string;
   featured?: boolean;
@@ -23,6 +24,7 @@ const blogPostsInfo: Record<string, Omit<BlogPost, 'slug' | 'content'>> = {
     date: 'April 6, 2025',
     author: 'Ahmed Gharib',
     category: 'AI & Data Engineering',
+    excerpt: 'Discover how vibe coding is transforming software development by allowing developers to create applications through natural language prompts and AI-powered code generation.',
     readingTime: '12 min',
     featured: true,
     image: '/assets/images/vibe-coding.jpg',
@@ -178,15 +180,15 @@ export const getAllPostSlugs = cache(async () => {
 
 export const getPostBySlug = cache(async (slug: string): Promise<BlogPost | null> => {
   console.log(`(Server) Fetching post: ${slug}`); // Log for debugging
-  
+
   const postInfo = blogPostsInfo[slug as keyof typeof blogPostsInfo];
   if (!postInfo) {
     return null; // Return null if not found
   }
-  
+
   // Load content from file
   const content = await getBlogContentFromFile(slug);
-  
+
   // Combine the slug and content with the rest of the post data
   return { ...postInfo, slug, content };
 });
