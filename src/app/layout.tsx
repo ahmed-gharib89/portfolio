@@ -1,24 +1,30 @@
 import type { Metadata } from 'next'
-import { Montserrat, Open_Sans, Fira_Code } from 'next/font/google'
 import './globals.css'
 import '@/styles/custom-scrollbar.css'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import StructuredData from '@/components/StructuredData'
+import { Montserrat, Open_Sans, Fira_Code } from 'next/font/google'
 
-const montserrat = Montserrat({
-  variable: '--font-montserrat',
-  subsets: ['latin']
+// Define the fonts
+const montserrat = Montserrat({ 
+  subsets: ['latin'],
+  variable: '--font-montserrat' 
 })
 
-const openSans = Open_Sans({
-  variable: '--font-opensans',
-  subsets: ['latin']
+const openSans = Open_Sans({ 
+  subsets: ['latin'],
+  variable: '--font-opensans' 
 })
 
-const firaCode = Fira_Code({
-  variable: '--font-firacode',
-  subsets: ['latin']
+const firaCode = Fira_Code({ 
+  subsets: ['latin'],
+  variable: '--font-firacode' 
 })
+
+// Using CSS variables for our self-hosted fonts
+const fontVariables = {
+  className: 'self-hosted-fonts'
+}
 
 export const metadata: Metadata = {
   title: 'Ahmed Gharib | Data Engineer & Analytics Professional',
