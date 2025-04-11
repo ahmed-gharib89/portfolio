@@ -1,24 +1,10 @@
-import { cache } from 'react';
-import fs from 'fs';
-import path from 'path';
+import { BlogPost } from '@/types/blog';
 
-// Type Definition
-export interface BlogPost {
-  slug: string;
-  title: string;
-  date: string;
-  author: string;
-  category: string;
-  content: string;
-  excerpt?: string;
-  readingTime?: string;
-  image?: string;
-  featured?: boolean;
-}
-
-// Meta information for blog posts
-// Content is loaded dynamically from HTML files in public/blog-content/
-const blogPostsInfo: Record<string, Omit<BlogPost, 'slug' | 'content'>> = {
+/**
+ * Meta information for blog posts
+ * Content is loaded dynamically from HTML files in public/blog-content/
+ */
+export const blogPostsInfo: Record<string, Omit<BlogPost, 'slug' | 'content'>> = {
   'vibe-coding-future-of-development': {
     title: 'Vibe Coding: The Future of Software Development in 2025',
     date: 'April 6, 2025',
@@ -156,39 +142,3 @@ const blogPostsInfo: Record<string, Omit<BlogPost, 'slug' | 'content'>> = {
     readingTime: '10 min',
   }
 };
-
-/**
- * Gets the content of a blog post from its HTML file
- */
-async function getBlogContentFromFile(slug: string): Promise<string> {
-  try {
-    // In Node.js environment (SSR)
-    const filePath = path.join(process.cwd(), 'public', 'blog-content', `${slug}.html`);
-    const content = await fs.promises.readFile(filePath, 'utf-8');
-    return content;
-  } catch (error) {
-    console.error(`Error loading blog content for ${slug}:`, error);
-    return `<p>Failed to load blog content. Please try again later.</p>`;
-  }
-}
-
-// Using React.cache for deduplication within a single request/render
-export const getAllPostSlugs = cache(async () => {
-  console.log(`(Server) Fetching all slugs`); // Log for debugging
-  return Object.keys(blogPostsInfo);
-});
-
-export const getPostBySlug = cache(async (slug: string): Promise<BlogPost | null> => {
-  console.log(`(Server) Fetching post: ${slug}`); // Log for debugging
-
-  const postInfo = blogPostsInfo[slug as keyof typeof blogPostsInfo];
-  if (!postInfo) {
-    return null; // Return null if not found
-  }
-
-  // Load content from file
-  const content = await getBlogContentFromFile(slug);
-
-  // Combine the slug and content with the rest of the post data
-  return { ...postInfo, slug, content };
-});

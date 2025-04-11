@@ -1,11 +1,11 @@
 'use client';
 
-import { createClientOnlyComponent } from '@/lib/component-loader';
+import { createClientOnlyComponent } from '@/lib/utils/component-loader';
 
 // Dynamically import the ThemeToggle component
 // This ensures it's only loaded client-side and not included in the main bundle
 const ThemeToggle = createClientOnlyComponent(
-  () => import('@/components/ThemeToggle'),
+  () => import('@/components/shared/ThemeToggle'),
   {
     // Display a simple placeholder while loading
     loading: () => (

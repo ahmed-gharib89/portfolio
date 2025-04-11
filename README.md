@@ -67,23 +67,32 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the r
 ## Project Structure
 
 ```
-src/
-├── app/              # Next.js App Router files
-│   ├── api/          # API routes (e.g., contact form)
-│   ├── blog/         # Blog section pages
-│   │   └── [slug]/   # Dynamic blog post pages
-│   └── page.tsx      # Homepage
-├── components/       # React components
-│   ├── animation/    # Animation components (AnimatedSection, etc.)
-│   ├── layout/       # Layout components (Header, Footer, ThemeToggle)
-│   ├── sections/     # Page section components (Hero, Projects, Contact)
-│   ├── ui/           # UI components (Button, Card, etc.)
-│   └── blog/         # Blog-specific components
-├── lib/              # Utility functions
-│   └── cv-utils.ts   # Utilities for CV functionality
-├── hooks/            # Custom React hooks
-├── styles/           # Global styles and Tailwind configuration
-└── types/            # TypeScript type definitions
+portfolio/
+├── public/                  # Static assets
+│   ├── assets/              # Images, files, etc.
+│   ├── blog-content/        # Blog HTML content
+│   └── fonts/               # Font files
+├── src/
+│   ├── app/                 # Next.js App Router
+│   │   ├── api/             # API routes
+│   │   ├── blog/            # Blog pages
+│   │   └── ...              # Other app routes
+│   ├── components/          # React components
+│   │   ├── ui/              # Reusable UI components
+│   │   ├── layout/          # Layout components
+│   │   ├── sections/        # Page sections
+│   │   ├── blog/            # Blog-specific components
+│   │   └── shared/          # Shared components
+│   ├── hooks/               # Custom React hooks
+│   ├── lib/                 # Utility functions
+│   │   ├── api/             # API-related functions
+│   │   ├── blog/            # Blog-related functions
+│   │   └── utils/           # General utilities
+│   ├── types/               # TypeScript type definitions
+│   ├── styles/              # Global styles
+│   └── config/              # Configuration files
+├── scripts/                 # Build and deployment scripts
+└── config files (.gitignore, package.json, etc.)
 ```
 
 ## Blog Section
@@ -94,6 +103,27 @@ The portfolio includes a blog section built with:
 - Categories and tags for organization
 - Social sharing functionality
 - Related post suggestions
+
+## Environment Variables
+
+Create a `.env.local` file with the following variables:
+
+```
+# Email Configuration
+EMAIL_HOST=your-smtp-host
+EMAIL_PORT=587
+EMAIL_SECURE=false
+EMAIL_USER=your-email@example.com
+EMAIL_PASS=your-password
+EMAIL_FROM=portfolio@example.com
+EMAIL_TO=your-email@example.com
+
+# Analytics
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+
+# Site Configuration
+NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+```
 
 ## Deployment
 

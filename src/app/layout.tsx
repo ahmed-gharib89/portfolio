@@ -1,24 +1,25 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import '@/styles/custom-scrollbar.css'
-import GoogleAnalytics from '@/components/GoogleAnalytics'
-import StructuredData from '@/components/StructuredData'
+import GoogleAnalytics from '@/components/shared/GoogleAnalytics'
+import StructuredData from '@/components/shared/StructuredData'
+import { analyticsConfig, siteConfig } from '@/config'
 import { Montserrat, Open_Sans, Fira_Code } from 'next/font/google'
 
 // Define the fonts
-const montserrat = Montserrat({ 
+const montserrat = Montserrat({
   subsets: ['latin'],
-  variable: '--font-montserrat' 
+  variable: '--font-montserrat'
 })
 
-const openSans = Open_Sans({ 
+const openSans = Open_Sans({
   subsets: ['latin'],
-  variable: '--font-opensans' 
+  variable: '--font-opensans'
 })
 
-const firaCode = Fira_Code({ 
+const firaCode = Fira_Code({
   subsets: ['latin'],
-  variable: '--font-firacode' 
+  variable: '--font-firacode'
 })
 
 // Using CSS variables for our self-hosted fonts
@@ -27,8 +28,8 @@ const fontVariables = {
 }
 
 export const metadata: Metadata = {
-  title: 'Ahmed Gharib | Data Engineer & Analytics Professional',
-  description: 'Portfolio website of Ahmed Gharib, an experienced Data Engineer with expertise in Microsoft Azure, AWS, and Google Cloud platforms.',
+  title: siteConfig.name,
+  description: siteConfig.description,
   icons: {
     icon: '/assets/images/dark.png',
     apple: '/assets/images/dark.png',
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
   },
   alternates: {
     // Using proper format for canonical URL
-    canonical: 'https://agharib.com/'
+    canonical: siteConfig.url
   },
   robots: {
     index: true,
@@ -83,7 +84,7 @@ export default function RootLayout({
         />
         <StructuredData />
       </head>
-      <GoogleAnalytics measurementId="G-0JS4YKCBHY" />
+      <GoogleAnalytics measurementId={analyticsConfig.googleAnalyticsId} />
       <body className={`${montserrat.variable} ${openSans.variable} ${firaCode.variable} font-opensans antialiased`}>{children}</body>
     </html>
   )

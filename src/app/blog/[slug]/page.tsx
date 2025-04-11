@@ -6,7 +6,8 @@ import Footer from '@/components/layout/Footer';
 import AnimatedSection from '@/components/animation/AnimatedSection';
 import Link from 'next/link';
 import { Calendar, Clock, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
-import { getAllPostSlugs, getPostBySlug, BlogPost } from '@/lib/blog-api';
+import { getAllPostSlugs, getPostBySlug } from '@/lib/blog/blog-api';
+import { BlogPost } from '@/types/blog';
 import BlogJsonLd from '@/components/blog/BlogJsonLd';
 import dynamic from 'next/dynamic';
 

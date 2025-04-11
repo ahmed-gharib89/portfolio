@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { motion, useAnimation, useInView } from 'framer-motion';
+import { fadeInUp } from '@/lib/utils/animation-utils';
 
 interface AnimatedSectionProps {
   children: React.ReactNode;
@@ -18,7 +19,7 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
 }) => {
   const controls = useAnimation();
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { 
+  const inView = useInView(ref, {
     once: true,
   });
 
@@ -28,13 +29,13 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
     }
   }, [controls, inView]);
 
+  // Use the fadeInUp animation with custom delay
   const variants = {
-    hidden: { opacity: 0, y: 50 },
+    hidden: fadeInUp.hidden,
     visible: {
-      opacity: 1,
-      y: 0,
+      ...fadeInUp.visible,
       transition: {
-        duration: 0.6,
+        ...fadeInUp.visible.transition,
         delay,
         ease: "easeOut",
       },
