@@ -1,5 +1,5 @@
 import React from 'react';
-import { BlogPost } from '@/types/blog';
+import { BlogPost } from '@/lib/blog-api';
 
 interface BlogJsonLdProps {
   post: BlogPost;
@@ -9,7 +9,7 @@ interface BlogJsonLdProps {
 const BlogJsonLd: React.FC<BlogJsonLdProps> = ({ post, url }) => {
   // Format the date to ISO format for schema
   const datePublished = new Date(post.date).toISOString();
-
+  
   // Create the schema
   const schema = {
     '@context': 'https://schema.org',

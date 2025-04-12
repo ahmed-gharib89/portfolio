@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
-import { emailConfig } from '@/config';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { name, email, subject, message } = body;
-
+    
     // Input validation
     if (!name || !email || !subject || !message) {
       return NextResponse.json(
@@ -14,7 +13,7 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
+    
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -23,22 +22,25 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
-    // Create a transporter using the centralized config
+    
+    // Create a transporter
     // For development, you can use a testing service like Ethereal:
     // https://ethereal.email/create
     // For production, use your actual email credentials or a service like SendGrid
     const transporter = nodemailer.createTransport({
-      host: emailConfig.host,
-      port: emailConfig.port,
-      secure: emailConfig.secure,
-      auth: emailConfig.auth,
+      host: process.env.EMAIL_HOST || 'smtp.ethereal.email',
+      port: Number(process.env.EMAIL_PORT) || 587,
+      secure: process.env.EMAIL_SECURE === 'true',
+      auth: {
+        user: process.env.EMAIL_USER || 'your-email@example.com',
+        pass: process.env.EMAIL_PASS || 'your-password',
+      },
     });
-
+    
     // Create email content
     const mailOptions = {
-      from: `"Portfolio Contact" <${emailConfig.from}>`,
-      to: emailConfig.to,
+      from: `"Portfolio Contact" <${process.env.EMAIL_FROM || 'portfolio@example.com'}>`,
+      to: process.env.EMAIL_TO || 'a.gharib89@yahoo.com',
       replyTo: email,
       subject: `Portfolio Contact: ${subject}`,
       text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
@@ -55,10 +57,10 @@ export async function POST(request: Request) {
         </div>
       `,
     };
-
+    
     // Send email
     await transporter.sendMail(mailOptions);
-
+    
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Contact form error:', error);
