@@ -24,14 +24,20 @@ jobs:
       - name: Build project
         run: npm run build
         
-      - name: Upload build artifact
-        id: upload-artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: next-build
-          path: .next
+      - name: Install production dependencies
+        run: npm ci --production
         
-      - name: Deploy to Ubuntu server
+      - name: Deploy build to Ubuntu server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.PORT || 22 }}
+          source: ".next/,public/,package.json,next.config.js,node_modules/"
+          target: "${{ secrets.DEPLOY_PATH || '/home/ubuntu/portfolio' }}"
+          
+      - name: Start application on server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -39,14 +45,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT || 22 }}
           script: |
-            # Stop the current process if it's running
-            echo "Stopping current process..."
-            # pm2 stop portfolio || true
             cd ${{ secrets.DEPLOY_PATH || '/home/ubuntu/portfolio' }}
-            # Download the build artifact from GitHub Actions
-            echo "Downloading build artifact..."
-            curl -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -o build.tar.gz "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ steps.upload-artifact.outputs.artifact-id }}/zip"
-            tar -xzf build.tar.gz -C /home/ubuntu/portfolio
             # Start the application using PM2
             echo "Starting the application..."
             pm2 reload portfolio || pm2 start npm --name "portfolio" -- start
