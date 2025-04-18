@@ -33,52 +33,54 @@
         </ul>
   
         <pre class="code-block">
-        from transformers import CLIPProcessor, CLIPModel
-        import torch
-        from PIL import Image
-  
-        # Load CLIP (Contrastive Language-Image Pre-Training) model
-        model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-        processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-  
-        # Function to get embeddings in the shared space
-        def get_multimodal_embeddings(texts=None, images=None):
-            inputs = processor(
-                text=texts if texts else None,
-                images=images if images else None,
-                return_tensors="pt", 
-                padding=True
-            )
-            
-            with torch.no_grad():
-                if texts and images:
-                    outputs = model(**inputs)
-                    text_embeds = outputs.text_embeds
-                    image_embeds = outputs.image_embeds
-                    return {"text": text_embeds, "image": image_embeds}
-                elif texts:
-                    text_features = model.get_text_features(**inputs)
-                    return {"text": text_features}
-                elif images:
-                    image_features = model.get_image_features(**inputs)
-                    return {"image": image_features}
-  
-        # Example: Process mixed data 
-        product_text = "Ergonomic office chair with lumbar support"
-        product_image = Image.open("office_chair.jpg")
-        
-        embeddings = get_multimodal_embeddings(
-            texts=[product_text], 
-            images=[product_image]
-        )
-        
-        # Now text and image are in the same vector space
-        similarity = torch.cosine_similarity(
-            embeddings["text"], 
-            embeddings["image"]
-        ).item()
-        
-        print(f"Text-image concept similarity: {similarity}")
+```
+from transformers import CLIPProcessor, CLIPModel
+import torch
+from PIL import Image
+
+# Load CLIP (Contrastive Language-Image Pre-Training) model
+model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+
+# Function to get embeddings in the shared space
+def get_multimodal_embeddings(texts=None, images=None):
+    inputs = processor(
+        text=texts if texts else None,
+        images=images if images else None,
+        return_tensors="pt", 
+        padding=True
+    )
+    
+    with torch.no_grad():
+        if texts and images:
+            outputs = model(**inputs)
+            text_embeds = outputs.text_embeds
+            image_embeds = outputs.image_embeds
+            return {"text": text_embeds, "image": image_embeds}
+        elif texts:
+            text_features = model.get_text_features(**inputs)
+            return {"text": text_features}
+        elif images:
+            image_features = model.get_image_features(**inputs)
+            return {"image": image_features}
+
+# Example: Process mixed data 
+product_text = "Ergonomic office chair with lumbar support"
+product_image = Image.open("office_chair.jpg")
+
+embeddings = get_multimodal_embeddings(
+    texts=[product_text], 
+    images=[product_image]
+)
+
+# Now text and image are in the same vector space
+similarity = torch.cosine_similarity(
+    embeddings["text"], 
+    embeddings["image"]
+).item()
+
+print(f"Text-image concept similarity: {similarity}")
+```
         </pre>
   
         <h3>2. Cross-modal Entity Resolution</h3>
@@ -94,43 +96,45 @@
         <p>Extracting structured data from unstructured sources becomes more powerful:</p>
   
         <pre class="code-block">
-        from transformers import AutoProcessor, AutoModelForVision2Seq
-        import requests
-        from PIL import Image
-  
-        # Load a multimodal model for visual text understanding
-        processor = AutoProcessor.from_pretrained("microsoft/kosmos-2-patch14-224")
-        model = AutoModelForVision2Seq.from_pretrained("microsoft/kosmos-2-patch14-224")
-  
-        def extract_form_data(image_path):
-            # Load image
-            image = Image.open(image_path)
-            
-            # Generate prompt for form extraction
-            prompt = "<grounding>Extract all fields and values from this form document.</grounding>"
-            
-            # Process image and prompt
-            inputs = processor(text=prompt, images=image, return_tensors="pt")
-            
-            # Generate extraction
-            with torch.no_grad():
-                outputs = model.generate(
-                    **inputs,
-                    max_new_tokens=128,
-                    num_beams=5
-                )
-            
-            # Decode and format results
-            extracted_text = processor.decode(outputs[0], skip_special_tokens=True)
-            
-            # Parse into structured format
-            # (In a real implementation, would parse the extracted_text into key-value pairs)
-            
-            return extracted_text
-  
-        # Extract data from a form image
-        form_data = extract_form_data("invoice_document.jpg")
-        print(form_data)
+```
+from transformers import AutoProcessor, AutoModelForVision2Seq
+import requests
+from PIL import Image
+
+# Load a multimodal model for visual text understanding
+processor = AutoProcessor.from_pretrained("microsoft/kosmos-2-patch14-224")
+model = AutoModelForVision2Seq.from_pretrained("microsoft/kosmos-2-patch14-224")
+
+def extract_form_data(image_path):
+    # Load image
+    image = Image.open(image_path)
+    
+    # Generate prompt for form extraction
+    prompt = "<grounding>Extract all fields and values from this form document.</grounding>"
+    
+    # Process image and prompt
+    inputs = processor(text=prompt, images=image, return_tensors="pt")
+    
+    # Generate extraction
+    with torch.no_grad():
+        outputs = model.generate(
+            **inputs,
+            max_new_tokens=128,
+            num_beams=5
+        )
+    
+    # Decode and format results
+    extracted_text = processor.decode(outputs[0], skip_special_tokens=True)
+    
+    # Parse into structured format
+    # (In a real implementation, would parse the extracted_text into key-value pairs)
+    
+    return extracted_text
+
+# Extract data from a form image
+form_data = extract_form_data("invoice_document.jpg")
+print(form_data)
+```
         </pre>
   
         <h3>4. Content-Based Integration of Diverse Media</h3>
@@ -156,78 +160,80 @@
         <p>Example architecture for a multimodal ETL pipeline:</p>
   
         <pre class="code-block">
-        # Conceptual multimodal ETL pipeline
-        class MultimodalETLPipeline:
-            def __init__(self, models, storage_client):
-                self.text_processor = models["text"]
-                self.image_processor = models["image"]
-                self.audio_processor = models["audio"]
-                self.multimodal_model = models["multimodal"]
-                self.storage = storage_client
-                
-            def extract(self, sources):
-                extracted_data = []
-                
-                for source in sources:
-                    if source.type == "text":
-                        data = self.text_processor.extract(source.content)
-                    elif source.type == "image":
-                        data = self.image_processor.extract(source.content)
-                    elif source.type == "audio":
-                        data = self.audio_processor.extract(source.content)
-                    
-                    extracted_data.append({
-                        "source_id": source.id,
-                        "content": data,
-                        "modality": source.type
-                    })
-                
-                return extracted_data
-                
-            def transform(self, extracted_data):
-                # Convert all to unified representation
-                unified_data = []
-                
-                for item in extracted_data:
-                    # Get embeddings in shared space
-                    embedding = self.multimodal_model.embed(
-                        content=item["content"], 
-                        modality=item["modality"]
-                    )
-                    
-                    # Generate cross-modal metadata
-                    metadata = self.multimodal_model.generate_metadata(
-                        content=item["content"],
-                        modality=item["modality"]
-                    )
-                    
-                    unified_data.append({
-                        "source_id": item["source_id"],
-                        "original_content": item["content"],
-                        "embedding": embedding,
-                        "metadata": metadata,
-                        "modality": item["modality"]
-                    })
-                
-                return unified_data
-                
-            def load(self, transformed_data):
-                # Store in vector database for cross-modal retrieval
-                for item in transformed_data:
-                    self.storage.store(
-                        id=item["source_id"],
-                        vector=item["embedding"],
-                        metadata={
-                            "original_modality": item["modality"],
-                            **item["metadata"]
-                        },
-                        content=item["original_content"]
-                    )
-                    
-            def run(self, sources):
-                extracted = self.extract(sources)
-                transformed = self.transform(extracted)
-                self.load(transformed)
+```
+# Conceptual multimodal ETL pipeline
+class MultimodalETLPipeline:
+    def __init__(self, models, storage_client):
+        self.text_processor = models["text"]
+        self.image_processor = models["image"]
+        self.audio_processor = models["audio"]
+        self.multimodal_model = models["multimodal"]
+        self.storage = storage_client
+        
+    def extract(self, sources):
+        extracted_data = []
+        
+        for source in sources:
+            if source.type == "text":
+                data = self.text_processor.extract(source.content)
+            elif source.type == "image":
+                data = self.image_processor.extract(source.content)
+            elif source.type == "audio":
+                data = self.audio_processor.extract(source.content)
+            
+            extracted_data.append({
+                "source_id": source.id,
+                "content": data,
+                "modality": source.type
+            })
+        
+        return extracted_data
+        
+    def transform(self, extracted_data):
+        # Convert all to unified representation
+        unified_data = []
+        
+        for item in extracted_data:
+            # Get embeddings in shared space
+            embedding = self.multimodal_model.embed(
+                content=item["content"], 
+                modality=item["modality"]
+            )
+            
+            # Generate cross-modal metadata
+            metadata = self.multimodal_model.generate_metadata(
+                content=item["content"],
+                modality=item["modality"]
+            )
+            
+            unified_data.append({
+                "source_id": item["source_id"],
+                "original_content": item["content"],
+                "embedding": embedding,
+                "metadata": metadata,
+                "modality": item["modality"]
+            })
+        
+        return unified_data
+        
+    def load(self, transformed_data):
+        # Store in vector database for cross-modal retrieval
+        for item in transformed_data:
+            self.storage.store(
+                id=item["source_id"],
+                vector=item["embedding"],
+                metadata={
+                    "original_modality": item["modality"],
+                    **item["metadata"]
+                },
+                content=item["original_content"]
+            )
+            
+    def run(self, sources):
+        extracted = self.extract(sources)
+        transformed = self.transform(extracted)
+        self.load(transformed)
+```
         </pre>
   
         <h3>2. Multi-modal Knowledge Graphs</h3>

@@ -147,7 +147,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               )}
 
               <article className="prose prose-lg dark:prose-invert max-w-none blog-content">
+                {/* For now, keep using dangerouslySetInnerHTML as a fallback */}
                 <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                {/* In a complete implementation, we would dynamically import MDX content */}
+                {/* Example placeholder for future MDX dynamic import */}
+                {/* <MDXContent content={post.content} /> */}
               </article>
 
               {/* Author info */}

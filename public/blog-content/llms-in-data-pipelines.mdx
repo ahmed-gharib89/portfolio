@@ -10,28 +10,30 @@
         
         <p>Example implementation using LangChain and great_expectations:</p>
         <pre class="code-block">
-        from langchain.llms import OpenAI
-        from great_expectations.core import ExpectationSuite
-        
-        def generate_data_quality_rules(dataset_description, sample_data):
-            llm = OpenAI(model_name="gpt-4")
-            prompt = f"""
-            Given the following dataset description and sample:
-            
-            Description: {dataset_description}
-            
-            Sample data:
-            {sample_data}
-            
-            Generate a comprehensive list of data quality rules that would 
-            be important to enforce, expressed as Great Expectations expectations.
-            """
-            
-            rules = llm.generate(prompt)
-            # Convert to Great Expectations format
-            # ...
-            
-            return expectation_suite
+```
+from langchain.llms import OpenAI
+from great_expectations.core import ExpectationSuite
+
+def generate_data_quality_rules(dataset_description, sample_data):
+    llm = OpenAI(model_name="gpt-4")
+    prompt = f"""
+    Given the following dataset description and sample:
+    
+    Description: {dataset_description}
+    
+    Sample data:
+    {sample_data}
+    
+    Generate a comprehensive list of data quality rules that would 
+    be important to enforce, expressed as Great Expectations expectations.
+    """
+    
+    rules = llm.generate(prompt)
+    # Convert to Great Expectations format
+    # ...
+    
+    return expectation_suite
+```
         </pre>
         
         <h2>Automated Documentation Generation</h2>
@@ -44,33 +46,35 @@
         
         <p>Example using LLM to document dbt models:</p>
         <pre class="code-block">
-        import os
-        import yaml
-        from langchain.llms import Anthropic
-        
-        def document_dbt_model(model_sql_path):
-            with open(model_sql_path, 'r') as f:
-                sql_code = f.read()
-            
-            llm = Anthropic(model="claude-2")
-            prompt = f"""
-            Here is a dbt SQL model:
-            
-            {sql_code}
-            
-            Please provide:
-            1. A clear description of what this model does
-            2. Documentation for each column
-            3. Any business logic encoded in this transformation
-            4. Dependencies and downstream effects
-            
-            Format as YAML for a dbt schema.yml file.
-            """
-            
-            documentation = llm.generate(prompt)
-            
-            # Save as schema.yml
-            # ...
+```
+import os
+import yaml
+from langchain.llms import Anthropic
+
+def document_dbt_model(model_sql_path):
+    with open(model_sql_path, 'r') as f:
+        sql_code = f.read()
+    
+    llm = Anthropic(model="claude-2")
+    prompt = f"""
+    Here is a dbt SQL model:
+    
+    {sql_code}
+    
+    Please provide:
+    1. A clear description of what this model does
+    2. Documentation for each column
+    3. Any business logic encoded in this transformation
+    4. Dependencies and downstream effects
+    
+    Format as YAML for a dbt schema.yml file.
+    """
+    
+    documentation = llm.generate(prompt)
+    
+    # Save as schema.yml
+    # ...
+```
         </pre>
         
         <h2>Data Transformation Assistance</h2>
@@ -91,34 +95,36 @@
         
         <p>Implementation example with a vector database:</p>
         <pre class="code-block">
-        from langchain.embeddings import OpenAIEmbeddings
-        from langchain.vectorstores import Pinecone
-        import pinecone
-        
-        # Initialize embeddings model
-        embeddings = OpenAIEmbeddings()
-        
-        # Initialize Pinecone
-        pinecone.init(api_key="YOUR_API_KEY", environment="YOUR_ENV")
-        index_name = "data-catalog"
-        
-        # Store dataset descriptions and metadata
-        texts = ["This dataset contains daily sales transactions from our retail stores",
-                 "Customer demographic information including age, location, and preferences",
-                 "Product inventory and supply chain tracking data"]
-                 
-        metadatas = [
-            {"name": "retail_sales", "owner": "Sales Team", "update_frequency": "Daily"},
-            {"name": "customer_demographics", "owner": "Marketing", "update_frequency": "Monthly"},
-            {"name": "inventory", "owner": "Operations", "update_frequency": "Hourly"}
-        ]
-        
-        # Create vectorstore
-        vector_db = Pinecone.from_texts(texts, embeddings, metadatas=metadatas, index_name=index_name)
-        
-        # Later, search using natural language
-        query = "Where can I find data about what products customers are buying?"
-        results = vector_db.similarity_search(query, k=2)
+```
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import Pinecone
+import pinecone
+
+# Initialize embeddings model
+embeddings = OpenAIEmbeddings()
+
+# Initialize Pinecone
+pinecone.init(api_key="YOUR_API_KEY", environment="YOUR_ENV")
+index_name = "data-catalog"
+
+# Store dataset descriptions and metadata
+texts = ["This dataset contains daily sales transactions from our retail stores",
+         "Customer demographic information including age, location, and preferences",
+         "Product inventory and supply chain tracking data"]
+         
+metadatas = [
+    {"name": "retail_sales", "owner": "Sales Team", "update_frequency": "Daily"},
+    {"name": "customer_demographics", "owner": "Marketing", "update_frequency": "Monthly"},
+    {"name": "inventory", "owner": "Operations", "update_frequency": "Hourly"}
+]
+
+# Create vectorstore
+vector_db = Pinecone.from_texts(texts, embeddings, metadatas=metadatas, index_name=index_name)
+
+# Later, search using natural language
+query = "Where can I find data about what products customers are buying?"
+results = vector_db.similarity_search(query, k=2)
+```
         </pre>
         
         <h2>Intelligent Data Lineage</h2>

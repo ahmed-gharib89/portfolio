@@ -25,25 +25,27 @@
         <p>Example of generating text embeddings using OpenAI's embedding API:</p>
         
         <pre class="code-block">
-        import openai
-        
-        # Set your API key
-        openai.api_key = "your-api-key"
-        
-        def get_embedding(text):
-            response = openai.Embedding.create(
-                input=text,
-                model="text-embedding-ada-002"
-            )
-            return response['data'][0]['embedding']
-        
-        # Generate vector embedding for a document
-        document = "Vector databases are specialized database systems designed to store and query vector embeddings efficiently."
-        embedding = get_embedding(document)
-        
-        # The embedding is a high-dimensional vector (e.g., 1536 dimensions)
-        print(f"Embedding dimensions: {len(embedding)}")
-        print(f"First few values: {embedding[:5]}")
+```
+import openai
+
+# Set your API key
+openai.api_key = "your-api-key"
+
+def get_embedding(text):
+    response = openai.Embedding.create(
+        input=text,
+        model="text-embedding-ada-002"
+    )
+    return response['data'][0]['embedding']
+
+# Generate vector embedding for a document
+document = "Vector databases are specialized database systems designed to store and query vector embeddings efficiently."
+embedding = get_embedding(document)
+
+# The embedding is a high-dimensional vector (e.g., 1536 dimensions)
+print(f"Embedding dimensions: {len(embedding)}")
+print(f"First few values: {embedding[:5]}")
+```
         </pre>
         
         <h3>2. Indexing Strategies</h3>
@@ -89,40 +91,42 @@
         
         <p>Example of using Pinecone with Python:</p>
         <pre class="code-block">
-        import pinecone
-        
-        # Initialize Pinecone
-        pinecone.init(api_key="your-api-key", environment="your-environment")
-        
-        # Create an index (or connect to existing one)
-        index_name = "document-embeddings"
-        
-        # Check if index exists
-        if index_name not in pinecone.list_indexes():
-            # Create a new index
-            pinecone.create_index(
-                name=index_name,
-                dimension=1536,  # Depends on your embedding model
-                metric="cosine"
-            )
-        
-        # Connect to the index
-        index = pinecone.Index(index_name)
-        
-        # Upsert vectors
-        index.upsert([
-            ("doc1", embedding, {"category": "technology", "author": "Smith"}),
-            # More vectors...
-        ])
-        
-        # Query the index
-        results = index.query(
-            vector=query_embedding,
-            top_k=5,
-            include_values=True,
-            include_metadata=True,
-            filter={"category": "technology"}
-        )
+```
+import pinecone
+
+# Initialize Pinecone
+pinecone.init(api_key="your-api-key", environment="your-environment")
+
+# Create an index (or connect to existing one)
+index_name = "document-embeddings"
+
+# Check if index exists
+if index_name not in pinecone.list_indexes():
+    # Create a new index
+    pinecone.create_index(
+        name=index_name,
+        dimension=1536,  # Depends on your embedding model
+        metric="cosine"
+    )
+
+# Connect to the index
+index = pinecone.Index(index_name)
+
+# Upsert vectors
+index.upsert([
+    ("doc1", embedding, {"category": "technology", "author": "Smith"}),
+    # More vectors...
+])
+
+# Query the index
+results = index.query(
+    vector=query_embedding,
+    top_k=5,
+    include_values=True,
+    include_metadata=True,
+    filter={"category": "technology"}
+)
+```
         </pre>
         
         <h3>2. Weaviate</h3>
@@ -167,114 +171,120 @@
         <p>By storing document embeddings in a vector database, you can implement semantic search that understands the meaning of queries beyond keyword matching.</p>
         
         <pre class="code-block">
-        from langchain.embeddings import OpenAIEmbeddings
-        from langchain.vectorstores import Chroma
-        from langchain.text_splitter import RecursiveCharacterTextSplitter
-        from langchain.chains import RetrievalQA
-        from langchain.llms import OpenAI
-        
-        # Process documents
-        with open("company_handbook.pdf", "r") as f:
-            text = f.read()
-            
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200
-        )
-        documents = text_splitter.split_text(text)
-        
-        # Create embeddings and vector store
-        embeddings = OpenAIEmbeddings()
-        vectorstore = Chroma.from_texts(
-            documents,
-            embeddings,
-            collection_name="company_handbook"
-        )
-        
-        # Create retrieval chain
-        qa_chain = RetrievalQA.from_chain_type(
-            llm=OpenAI(),
-            chain_type="stuff",
-            retriever=vectorstore.as_retriever()
-        )
-        
-        # Query the knowledge base
-        result = qa_chain.run("What's our company's parental leave policy?")
-        print(result)
+```
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import Chroma
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.chains import RetrievalQA
+from langchain.llms import OpenAI
+
+# Process documents
+with open("company_handbook.pdf", "r") as f:
+    text = f.read()
+    
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=1000,
+    chunk_overlap=200
+)
+documents = text_splitter.split_text(text)
+
+# Create embeddings and vector store
+embeddings = OpenAIEmbeddings()
+vectorstore = Chroma.from_texts(
+    documents,
+    embeddings,
+    collection_name="company_handbook"
+)
+
+# Create retrieval chain
+qa_chain = RetrievalQA.from_chain_type(
+    llm=OpenAI(),
+    chain_type="stuff",
+    retriever=vectorstore.as_retriever()
+)
+
+# Query the knowledge base
+result = qa_chain.run("What's our company's parental leave policy?")
+print(result)
+```
         </pre>
         
         <h3>2. Recommendation Systems</h3>
         <p>Vector databases can power recommendation systems by finding items with embeddings similar to those a user has shown interest in.</p>
         
         <pre class="code-block">
-        import numpy as np
-        from sklearn.metrics.pairwise import cosine_similarity
-        
-        def recommend_products(user_id, product_embeddings, user_history, top_n=5):
-            # Get embeddings of products the user has interacted with
-            user_product_embeddings = [
-                product_embeddings[product_id] for product_id in user_history
-            ]
-            
-            # Calculate user profile as the average of product embeddings
-            user_profile = np.mean(user_product_embeddings, axis=0)
-            
-            # Find similar products using vector database
-            results = vector_db.query(
-                vector=user_profile,
-                top_k=top_n + len(user_history),  # Get extra results to filter history
-                filter={"in_stock": True}
-            )
-            
-            # Filter out products the user has already seen
-            recommendations = [
-                result_id for result_id in results.ids 
-                if result_id not in user_history
-            ][:top_n]
-            
-            return recommendations
+```
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+def recommend_products(user_id, product_embeddings, user_history, top_n=5):
+    # Get embeddings of products the user has interacted with
+    user_product_embeddings = [
+        product_embeddings[product_id] for product_id in user_history
+    ]
+    
+    # Calculate user profile as the average of product embeddings
+    user_profile = np.mean(user_product_embeddings, axis=0)
+    
+    # Find similar products using vector database
+    results = vector_db.query(
+        vector=user_profile,
+        top_k=top_n + len(user_history),  # Get extra results to filter history
+        filter={"in_stock": True}
+    )
+    
+    # Filter out products the user has already seen
+    recommendations = [
+        result_id for result_id in results.ids 
+        if result_id not in user_history
+    ][:top_n]
+    
+    return recommendations
+```
         </pre>
         
         <h3>3. Image and Multi-modal Search</h3>
         <p>Vector databases can store embeddings from multiple modalities, enabling powerful cross-modal search capabilities.</p>
         
         <pre class="code-block">
-        from PIL import Image
-        import torch
-        from transformers import CLIPProcessor, CLIPModel
-        
-        # Load CLIP model
-        model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-        processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-        
-        def get_image_embedding(image_path):
-            image = Image.open(image_path)
-            inputs = processor(images=image, return_tensors="pt", padding=True)
-            with torch.no_grad():
-                outputs = model.get_image_features(**inputs)
-            return outputs[0].numpy()
-        
-        def get_text_embedding(text):
-            inputs = processor(text=text, return_tensors="pt", padding=True)
-            with torch.no_grad():
-                outputs = model.get_text_features(**inputs)
-            return outputs[0].numpy()
-        
-        # Store image embeddings in vector database
-        for image_path in image_paths:
-            image_id = get_image_id(image_path)
-            embedding = get_image_embedding(image_path)
-            vector_db.upsert([(image_id, embedding, {"type": "image"})])
-        
-        # Query images using text
-        text_query = "a cat playing with a ball of yarn"
-        query_embedding = get_text_embedding(text_query)
-        
-        results = vector_db.query(
-            vector=query_embedding,
-            top_k=5,
-            filter={"type": "image"}
-        )
+```
+from PIL import Image
+import torch
+from transformers import CLIPProcessor, CLIPModel
+
+# Load CLIP model
+model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+
+def get_image_embedding(image_path):
+    image = Image.open(image_path)
+    inputs = processor(images=image, return_tensors="pt", padding=True)
+    with torch.no_grad():
+        outputs = model.get_image_features(**inputs)
+    return outputs[0].numpy()
+
+def get_text_embedding(text):
+    inputs = processor(text=text, return_tensors="pt", padding=True)
+    with torch.no_grad():
+        outputs = model.get_text_features(**inputs)
+    return outputs[0].numpy()
+
+# Store image embeddings in vector database
+for image_path in image_paths:
+    image_id = get_image_id(image_path)
+    embedding = get_image_embedding(image_path)
+    vector_db.upsert([(image_id, embedding, {"type": "image"})])
+
+# Query images using text
+text_query = "a cat playing with a ball of yarn"
+query_embedding = get_text_embedding(text_query)
+
+results = vector_db.query(
+    vector=query_embedding,
+    top_k=5,
+    filter={"type": "image"}
+)
+```
         </pre>
         
         <h2>Performance Optimization Techniques</h2>
@@ -291,39 +301,41 @@
         <h3>2. Hybrid Search</h3>
         <p>Combining vector search with traditional keyword search can improve accuracy and relevance:</p>
         <pre class="code-block">
-        def hybrid_search(query, vector_db, text_db, alpha=0.7):
-            # Get vector search results
-            query_embedding = get_embedding(query)
-            vector_results = vector_db.query(
-                vector=query_embedding,
-                top_k=20
-            )
+```
+def hybrid_search(query, vector_db, text_db, alpha=0.7):
+    # Get vector search results
+    query_embedding = get_embedding(query)
+    vector_results = vector_db.query(
+        vector=query_embedding,
+        top_k=20
+    )
+    
+    # Get keyword search results
+    keyword_results = text_db.search(
+        query=query,
+        top_k=20
+    )
+    
+    # Combine and rerank results
+    combined_results = {}
+    for doc_id, score in vector_results.items():
+        combined_results[doc_id] = alpha * score
+        
+    for doc_id, score in keyword_results.items():
+        if doc_id in combined_results:
+            combined_results[doc_id] += (1 - alpha) * score
+        else:
+            combined_results[doc_id] = (1 - alpha) * score
             
-            # Get keyword search results
-            keyword_results = text_db.search(
-                query=query,
-                top_k=20
-            )
-            
-            # Combine and rerank results
-            combined_results = {}
-            for doc_id, score in vector_results.items():
-                combined_results[doc_id] = alpha * score
-                
-            for doc_id, score in keyword_results.items():
-                if doc_id in combined_results:
-                    combined_results[doc_id] += (1 - alpha) * score
-                else:
-                    combined_results[doc_id] = (1 - alpha) * score
-                    
-            # Sort by combined score
-            sorted_results = sorted(
-                combined_results.items(), 
-                key=lambda x: x[1], 
-                reverse=True
-            )
-            
-            return sorted_results[:10]
+    # Sort by combined score
+    sorted_results = sorted(
+        combined_results.items(), 
+        key=lambda x: x[1], 
+        reverse=True
+    )
+    
+    return sorted_results[:10]
+```
         </pre>
         
         <h3>3. Sharding and Distributed Architectures</h3>

@@ -163,7 +163,7 @@ const blogPostsInfo: Record<string, Omit<BlogPost, 'slug' | 'content'>> = {
 async function getBlogContentFromFile(slug: string): Promise<string> {
   try {
     // In Node.js environment (SSR)
-    const filePath = path.join(process.cwd(), 'public', 'blog-content', `${slug}.html`);
+    const filePath = path.join(process.cwd(), 'public', 'blog-content', `${slug}.mdx`);
     const content = await fs.promises.readFile(filePath, 'utf-8');
     return content;
   } catch (error) {

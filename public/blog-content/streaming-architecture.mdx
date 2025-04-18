@@ -22,86 +22,90 @@
         
         <p>Sample Kafka producer code in Python:</p>
         <pre class="code-block">
-        from kafka import KafkaProducer
-        import json
-        
-        # Configure the producer
-        producer = KafkaProducer(
-            bootstrap_servers=['kafka-broker:9092'],
-            value_serializer=lambda x: json.dumps(x).encode('utf-8')
-        )
-        
-        # Send messages
-        def send_event(event):
-            producer.send('events-topic', value=event)
-            
-        # Example event
-        event = {
-            'user_id': '12345',
-            'event_type': 'page_view',
-            'timestamp': '2025-02-28T15:22:31Z',
-            'page': '/products/1234',
-            'metadata': {
-                'user_agent': 'Mozilla/5.0...',
-                'referrer': 'https://www.google.com'
-            }
-        }
-        
-        send_event(event)
+```
+from kafka import KafkaProducer
+import json
+
+# Configure the producer
+producer = KafkaProducer(
+    bootstrap_servers=['kafka-broker:9092'],
+    value_serializer=lambda x: json.dumps(x).encode('utf-8')
+)
+
+# Send messages
+def send_event(event):
+    producer.send('events-topic', value=event)
+    
+# Example event
+event = {
+    'user_id': '12345',
+    'event_type': 'page_view',
+    'timestamp': '2025-02-28T15:22:31Z',
+    'page': '/products/1234',
+    'metadata': {
+        'user_agent': 'Mozilla/5.0...',
+        'referrer': 'https://www.google.com'
+    }
+}
+
+send_event(event)
+```
         </pre>
         
         <h3>2. Stream Processing with Spark Structured Streaming</h3>
         <p>Apache Spark's Structured Streaming provides a powerful SQL-based API for processing streams:</p>
         
         <pre class="code-block">
-        from pyspark.sql import SparkSession
-        from pyspark.sql.functions import window, col
-        
-        # Initialize Spark
-        spark = SparkSession.builder \
-            .appName("StreamProcessor") \
-            .getOrCreate()
-        
-        # Read from Kafka
-        events_df = spark \
-            .readStream \
-            .format("kafka") \
-            .option("kafka.bootstrap.servers", "kafka-broker:9092") \
-            .option("subscribe", "events-topic") \
-            .load()
-        
-        # Parse JSON payload
-        from pyspark.sql.types import StructType, StringType, TimestampType
-        from pyspark.sql.functions import from_json
-        
-        schema = StructType() \
-            .add("user_id", StringType()) \
-            .add("event_type", StringType()) \
-            .add("timestamp", TimestampType()) \
-            .add("page", StringType())
-        
-        parsed_events = events_df \
-            .select(from_json(col("value").cast("string"), schema).alias("data")) \
-            .select("data.*")
-        
-        # Calculate page views per minute
-        page_counts = parsed_events \
-            .withWatermark("timestamp", "10 minutes") \
-            .groupBy(
-                window(col("timestamp"), "1 minute"),
-                col("page")
-            ) \
-            .count()
-        
-        # Write to output sink
-        query = page_counts \
-            .writeStream \
-            .outputMode("complete") \
-            .format("memory") \
-            .queryName("page_counts") \
-            .start()
-        
-        query.awaitTermination()
+```
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import window, col
+
+# Initialize Spark
+spark = SparkSession.builder \
+    .appName("StreamProcessor") \
+    .getOrCreate()
+
+# Read from Kafka
+events_df = spark \
+    .readStream \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", "kafka-broker:9092") \
+    .option("subscribe", "events-topic") \
+    .load()
+
+# Parse JSON payload
+from pyspark.sql.types import StructType, StringType, TimestampType
+from pyspark.sql.functions import from_json
+
+schema = StructType() \
+    .add("user_id", StringType()) \
+    .add("event_type", StringType()) \
+    .add("timestamp", TimestampType()) \
+    .add("page", StringType())
+
+parsed_events = events_df \
+    .select(from_json(col("value").cast("string"), schema).alias("data")) \
+    .select("data.*")
+
+# Calculate page views per minute
+page_counts = parsed_events \
+    .withWatermark("timestamp", "10 minutes") \
+    .groupBy(
+        window(col("timestamp"), "1 minute"),
+        col("page")
+    ) \
+    .count()
+
+# Write to output sink
+query = page_counts \
+    .writeStream \
+    .outputMode("complete") \
+    .format("memory") \
+    .queryName("page_counts") \
+    .start()
+
+query.awaitTermination()
+```
         </pre>
         
         <h3>3. Event Sourcing and CQRS Patterns</h3>

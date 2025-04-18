@@ -42,3 +42,6 @@ server-setup.sh
 
 copilot-instructions.md
 
+
+# Ignore HTML blog content files
+public/blog-content/html/
