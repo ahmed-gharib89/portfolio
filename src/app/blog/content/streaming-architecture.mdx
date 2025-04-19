@@ -1,0 +1,979 @@
+---
+title: "Streaming Architecture: Building Real-Time Data Pipelines"
+date: "2025-04-05"
+excerpt: "Explore modern streaming architecture patterns and best practices for building scalable, resilient real-time data pipelines that deliver immediate insights from high-velocity data."
+author: "Ahmed Gharib"
+category: "Data Engineering"
+tags: ["streaming", "data engineering", "real-time", "Kafka", "data architecture"]
+coverImage: "/assets/images/streaming-architecture.jpg"
+readingTime: "12 min read"
+featured: false
+---
+
+# Streaming Architecture: Building Real-Time Data Pipelines
+
+As businesses increasingly require immediate insights from high-velocity data, streaming architectures have evolved to meet these demands. This article explores modern streaming architecture patterns and best practices for building scalable, resilient real-time data pipelines.
+
+## The Evolution of Data Processing Paradigms
+
+Data processing architectures have evolved through several paradigms:
+
+- **Batch processing** - Periodic processing of accumulated data
+- **Micro-batch** - Frequent small batches to approximate real-time
+- **Stream processing** - Continuous processing of data as it arrives
+- **Hybrid architectures** - Combining streaming and batch (Lambda, Kappa)
+
+<Chart 
+  data={[
+    { name: 'Batch', latency: 20, throughput: 95, complexity: 40, cost: 30 },
+    { name: 'Micro-batch', latency: 60, throughput: 80, complexity: 55, cost: 50 },
+    { name: 'Streaming', latency: 90, throughput: 70, complexity: 75, cost: 70 },
+    { name: 'Hybrid', latency: 80, throughput: 85, complexity: 90, cost: 85 }
+  ]}
+  title="Data Processing Paradigm Comparison"
+  xAxisLabel="Processing Paradigm"
+  yAxisLabel="Score"
+  dataKeys={['latency', 'throughput', 'complexity', 'cost']}
+  colors={['#3b82f6', '#10b981', '#f59e0b', '#ef4444']}
+/>
+
+## Core Components of Modern Streaming Architecture
+
+### 1. Data Ingestion Layer
+
+The entry point for data into the streaming pipeline:
+
+- **Stream producers** - Applications, devices, and systems generating data
+- **Ingestion services** - Kafka Connect, Kinesis Firehose, Pub/Sub ingest
+- **Change data capture (CDC)** - Capturing database changes as streams
+- **Edge processing** - Initial filtering and transformation at the source
+
+<CodeBlock className="language-java">
+// Example Kafka Producer in Java
+import org.apache.kafka.clients.producer.*;
+import java.util.Properties;
+
+public class SensorDataProducer {
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "kafka-broker1:9092,kafka-broker2:9092");
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("acks", "all");
+        props.put("retries", 3);
+        props.put("batch.size", 16384);
+        props.put("linger.ms", 1);
+        props.put("buffer.memory", 33554432);
+        
+        Producer<String, String> producer = new KafkaProducer<>(props);
+        
+        // Simulate sensor data
+        for (int i = 0; i < 100; i++) {
+            String sensorId = "sensor-" + (i % 10);
+            double temperature = 20 + Math.random() * 10;
+            long timestamp = System.currentTimeMillis();
+            
+            String value = String.format(
+                "{\"sensorId\":\"%s\",\"temperature\":%.2f,\"timestamp\":%d}",
+                sensorId, temperature, timestamp
+            );
+            
+            ProducerRecord<String, String> record = 
+                new ProducerRecord<>("sensor-data", sensorId, value);
+                
+            producer.send(record, (metadata, exception) -> {
+                if (exception != null) {
+                    System.err.println("Error sending message: " + exception.getMessage());
+                } else {
+                    System.out.printf("Sent message: topic=%s, partition=%d, offset=%d%n", 
+                        metadata.topic(), metadata.partition(), metadata.offset());
+                }
+            });
+            
+            try {
+                Thread.sleep(100); // Simulate data generation every 100ms
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+        
+        producer.close();
+    }
+}
+</CodeBlock>
+
+### 2. Stream Processing Layer
+
+Where the continuous computation happens:
+
+- **Stream processors** - Kafka Streams, Flink, Spark Streaming, ksqlDB
+- **Processing patterns** - Filtering, enrichment, aggregation, windowing
+- **State management** - Handling stateful operations in distributed systems
+- **Event-time processing** - Dealing with out-of-order events
+
+<ImageGallery 
+  images={[
+    { src: "/assets/images/stream-processing.jpg", alt: "Stream processing architecture diagram" },
+    { src: "/assets/images/windowing-patterns.jpg", alt: "Different windowing patterns in stream processing" },
+    { src: "/assets/images/stateful-processing.jpg", alt: "Stateful stream processing concepts" }
+  ]}
+  caption="Stream processing involves complex patterns like windowing and stateful operations"
+/>
+
+### 3. Storage Layer
+
+Persisting streaming data for various use cases:
+
+- **Stream storage** - Kafka, Kinesis, Pulsar as durable logs
+- **Hot storage** - Redis, Cassandra for real-time serving
+- **Warm storage** - Elasticsearch, MongoDB for recent analytics
+- **Cold storage** - S3, GCS, ADLS for historical archiving
+
+<TwitterEmbed tweetId="1649831467284152322" />
+
+### 4. Serving Layer
+
+Making processed data available to consumers:
+
+- **Real-time APIs** - REST, GraphQL, gRPC interfaces
+- **Websockets** - Push updates to web clients
+- **Materialized views** - Pre-computed results for fast access
+- **Query engines** - Interactive analysis of streaming data
+
+<GistEmbed gistId="e07d9e7d92d2a06fe5207b6a0c3b0d3a" username="streaming-engineer" />
+
+## Architectural Patterns for Streaming Systems
+
+### 1. Event Sourcing and CQRS
+
+Separating write and read operations for scalability:
+
+<CodeBlock className="language-typescript">
+// Event Sourcing pattern in TypeScript
+interface Event {
+  id: string;
+  type: string;
+  timestamp: number;
+  data: any;
+}
+
+class ShoppingCart {
+  private id: string;
+  private events: Event[] = [];
+  private items: Map<string, number> = new Map();
+  
+  constructor(id: string) {
+    this.id = id;
+  }
+  
+  // Command: Add item to cart
+  addItem(productId: string, quantity: number): void {
+    // Business logic validation
+    if (quantity <= 0) {
+      throw new Error("Quantity must be positive");
+    }
+    
+    // Create and store the event
+    const event: Event = {
+      id: generateUuid(),
+      type: "ITEM_ADDED",
+      timestamp: Date.now(),
+      data: { productId, quantity }
+    };
+    
+    this.applyEvent(event);
+    this.events.push(event);
+    
+    // Publish event to stream
+    eventStream.publish("shopping-carts", this.id, event);
+  }
+  
+  // Command: Remove item from cart
+  removeItem(productId: string): void {
+    if (!this.items.has(productId)) {
+      throw new Error("Item not in cart");
+    }
+    
+    const event: Event = {
+      id: generateUuid(),
+      type: "ITEM_REMOVED",
+      timestamp: Date.now(),
+      data: { productId }
+    };
+    
+    this.applyEvent(event);
+    this.events.push(event);
+    
+    // Publish event to stream
+    eventStream.publish("shopping-carts", this.id, event);
+  }
+  
+  // Event handler: Apply events to update state
+  private applyEvent(event: Event): void {
+    switch (event.type) {
+      case "ITEM_ADDED":
+        const currentQty = this.items.get(event.data.productId) || 0;
+        this.items.set(event.data.productId, currentQty + event.data.quantity);
+        break;
+        
+      case "ITEM_REMOVED":
+        this.items.delete(event.data.productId);
+        break;
+        
+      // Handle other event types...
+    }
+  }
+  
+  // Query: Get current cart state
+  getItems(): Map<string, number> {
+    return new Map(this.items);
+  }
+  
+  // Rebuild state from event history
+  static rebuildFromEvents(id: string, events: Event[]): ShoppingCart {
+    const cart = new ShoppingCart(id);
+    events.forEach(event => cart.applyEvent(event));
+    cart.events = [...events];
+    return cart;
+  }
+}
+</CodeBlock>
+
+### 2. Stream-Table Duality
+
+Unifying stream and batch processing paradigms:
+
+<YouTubeEmbed videoId="dQw4w9WgXcQ" title="Stream-Table Duality in Modern Data Architecture" />
+
+### 3. Kappa Architecture
+
+Simplifying Lambda with a unified streaming approach:
+
+<CodeBlock className="language-yaml">
+# Kappa Architecture Components in a Kubernetes Deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kappa-streaming-pipeline
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kappa-streaming
+  template:
+    metadata:
+      labels:
+        app: kappa-streaming
+    spec:
+      containers:
+      - name: stream-processor
+        image: streaming-processor:latest
+        env:
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka-broker:9092"
+        - name: APPLICATION_ID
+          value: "kappa-streaming-app"
+        - name: INPUT_TOPICS
+          value: "raw-events"
+        - name: PROCESSING_PARALLELISM
+          value: "4"
+        - name: CHECKPOINT_INTERVAL_MS
+          value: "60000"
+        - name: STATE_STORE_DIR
+          value: "/data/state-store"
+        volumeMounts:
+        - name: state-volume
+          mountPath: /data/state-store
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+      volumes:
+      - name: state-volume
+        persistentVolumeClaim:
+          claimName: stream-state-pvc
+---
+# Materialized View Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: materialized-view-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: materialized-view
+  template:
+    metadata:
+      labels:
+        app: materialized-view
+    spec:
+      containers:
+      - name: view-service
+        image: materialized-view:latest
+        env:
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka-broker:9092"
+        - name: CONSUMER_GROUP
+          value: "view-service-group"
+        - name: TOPICS
+          value: "processed-events"
+        - name: REDIS_HOST
+          value: "redis-master"
+        - name: REDIS_PORT
+          value: "6379"
+        ports:
+        - containerPort: 8080
+          name: http
+---
+# API Service for Query Access
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: query-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: query-api
+  template:
+    metadata:
+      labels:
+        app: query-api
+    spec:
+      containers:
+      - name: api-service
+        image: query-api:latest
+        env:
+        - name: REDIS_HOST
+          value: "redis-master"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: HISTORICAL_STORAGE_URL
+          value: "http://historical-query-service:8080"
+        ports:
+        - containerPort: 8080
+          name: http
+</CodeBlock>
+
+## Stream Processing Patterns
+
+### 1. Windowing Strategies
+
+Techniques for processing time-based data slices:
+
+- **Tumbling windows** - Fixed-size, non-overlapping time intervals
+- **Sliding windows** - Fixed-size, overlapping time intervals
+- **Session windows** - Dynamic windows based on activity periods
+- **Global windows** - Aggregating all events with custom triggers
+
+<Chart 
+  data={[
+    { time: '1', tumbling: 'Window 1', sliding: 'Window 1', session: 'Session 1' },
+    { time: '2', tumbling: 'Window 1', sliding: 'Window 1', session: 'Session 1' },
+    { time: '3', tumbling: 'Window 1', sliding: 'Window 1', session: 'Session 1' },
+    { time: '4', tumbling: 'Window 1', sliding: 'Window 1', session: null },
+    { time: '5', tumbling: 'Window 2', sliding: 'Window 2', session: null },
+    { time: '6', tumbling: 'Window 2', sliding: 'Window 2', session: 'Session 2' },
+    { time: '7', tumbling: 'Window 2', sliding: 'Window 2', session: 'Session 2' },
+    { time: '8', tumbling: 'Window 2', sliding: 'Window 2', session: 'Session 2' },
+    { time: '9', tumbling: 'Window 3', sliding: 'Window 3', session: null },
+    { time: '10', tumbling: 'Window 3', sliding: 'Window 3', session: null }
+  ]}
+  title="Windowing Strategies Comparison"
+  xAxisLabel="Time"
+  yAxisLabel="Window Assignment"
+  type="scatter"
+  dataKeys={['tumbling', 'sliding', 'session']}
+  colors={['#3b82f6', '#10b981', '#f59e0b']}
+/>
+
+### 2. Handling Late Data
+
+Strategies for processing out-of-order events:
+
+<CodeBlock className="language-scala">
+// Handling late data in Apache Flink (Scala)
+import org.apache.flink.streaming.api.scala._
+import org.apache.flink.streaming.api.windowing.time.Time
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow
+import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows
+import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
+import org.apache.flink.streaming.api.watermark.Watermark
+
+// Define event class
+case class SensorReading(sensorId: String, temperature: Double, timestamp: Long)
+
+// Create execution environment
+val env = StreamExecutionEnvironment.getExecutionEnvironment
+
+// Configure for event time processing
+env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+
+// Create a stream from a source
+val readings: DataStream[SensorReading] = env
+  .addSource(new SensorSource())
+  // Extract timestamps and generate watermarks
+  // Allow for events arriving up to 5 seconds late
+  .assignTimestampsAndWatermarks(
+    new BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.seconds(5)) {
+      override def extractTimestamp(reading: SensorReading): Long = reading.timestamp
+    }
+  )
+
+// Process data in 1-minute tumbling windows
+// Include late events up to 1 minute after the watermark passes the window end
+val processedReadings = readings
+  .keyBy(_.sensorId)
+  .window(TumblingEventTimeWindows.of(Time.minutes(1)))
+  .allowedLateness(Time.minutes(1))
+  // Output late events to a side output
+  .sideOutputLateData(new OutputTag[SensorReading]("late-readings"))
+  .aggregate(new AverageTemperatureAggregator())
+
+// Main output - process on time and allowed late events
+processedReadings.print()
+
+// Side output - process very late events separately
+val lateReadings = processedReadings.getSideOutput(new OutputTag[SensorReading]("late-readings"))
+lateReadings
+  .map(reading => s"LATE: ${reading.sensorId}, ${reading.temperature}, ${reading.timestamp}")
+  .print()
+
+// Execute the streaming pipeline
+env.execute("Sensor Monitoring with Late Data Handling")
+</CodeBlock>
+
+### 3. Exactly-Once Processing
+
+Ensuring reliable processing semantics:
+
+<Callout type="info">
+  Achieving exactly-once semantics in streaming systems requires coordination between the messaging system, the stream processor, and the sink systems. Modern platforms like Kafka with transactions, Flink with checkpointing, and Spark with WAL provide the building blocks for implementing exactly-once guarantees.
+</Callout>
+
+## Scaling and Performance Optimization
+
+### 1. Partitioning Strategies
+
+Distributing processing for parallelism:
+
+<ImageGallery 
+  images={[
+    { src: "/assets/images/key-partitioning.jpg", alt: "Key-based partitioning in streaming systems" },
+    { src: "/assets/images/dynamic-partitioning.jpg", alt: "Dynamic partitioning for load balancing" },
+    { src: "/assets/images/custom-partitioning.jpg", alt: "Custom partitioning strategies for specific workloads" }
+  ]}
+  caption="Effective partitioning is crucial for scaling stream processing systems"
+/>
+
+### 2. Backpressure Handling
+
+Managing overload situations gracefully:
+
+- **Buffer tuning** - Optimizing buffer sizes for different components
+- **Rate limiting** - Controlling producer throughput
+- **Dynamic scaling** - Adding resources based on load
+- **Load shedding** - Strategically dropping events when necessary
+
+### 3. State Management Optimization
+
+Efficient handling of stateful operations:
+
+<CodeBlock className="language-python">
+# Optimized state management in Python with RocksDB backend
+from pyflink.datastream import StreamExecutionEnvironment
+from pyflink.datastream.state import ValueStateDescriptor, MapStateDescriptor
+from pyflink.common.typeinfo import Types
+from pyflink.datastream.functions import KeyedProcessFunction
+
+class OptimizedAggregator(KeyedProcessFunction):
+    def __init__(self):
+        self.sum_state = None
+        self.count_state = None
+        self.window_state = None
+    
+    def open(self, runtime_context):
+        # Define state descriptors
+        sum_descriptor = ValueStateDescriptor(
+            "running_sum",
+            Types.DOUBLE()
+        )
+        count_descriptor = ValueStateDescriptor(
+            "running_count",
+            Types.LONG()
+        )
+        window_descriptor = MapStateDescriptor(
+            "window_values",
+            Types.LONG(),
+            Types.DOUBLE()
+        )
+        
+        # Configure state backend properties for optimization
+        sum_descriptor.enable_time_to_live(ttl_config)
+        
+        # Get state handles
+        self.sum_state = runtime_context.get_state(sum_descriptor)
+        self.count_state = runtime_context.get_state(count_descriptor)
+        self.window_state = runtime_context.get_map_state(window_descriptor)
+    
+    def process_element(self, event, ctx):
+        # Get current state values
+        current_sum = self.sum_state.value()
+        if current_sum is None:
+            current_sum = 0.0
+            
+        current_count = self.count_state.value()
+        if current_count is None:
+            current_count = 0
+        
+        # Update running aggregates
+        current_sum += event.value
+        current_count += 1
+        
+        # Store in state
+        self.sum_state.update(current_sum)
+        self.count_state.update(current_count)
+        
+        # Store in windowed state with event timestamp as key
+        self.window_state.put(event.timestamp, event.value)
+        
+        # Register event time timer for window expiration
+        ctx.timer_service().register_event_time_timer(
+            event.timestamp + window_size_ms
+        )
+        
+        # Emit current average
+        yield (event.key, current_sum / current_count)
+    
+    def on_timer(self, timestamp, ctx):
+        # Window expiration logic
+        expiration_threshold = timestamp - window_size_ms
+        
+        # Iterate through window state and remove expired entries
+        expired_timestamps = []
+        current_sum = self.sum_state.value()
+        current_count = self.count_state.value()
+        
+        for ts, value in self.window_state.items():
+            if ts <= expiration_threshold:
+                expired_timestamps.append(ts)
+                current_sum -= value
+                current_count -= 1
+        
+        # Remove expired entries
+        for ts in expired_timestamps:
+            self.window_state.remove(ts)
+        
+        # Update aggregates
+        if current_count > 0:
+            self.sum_state.update(current_sum)
+            self.count_state.update(current_count)
+            yield (ctx.get_current_key(), current_sum / current_count)
+        else:
+            # All events expired, clear state
+            self.sum_state.clear()
+            self.count_state.clear()
+</CodeBlock>
+
+## Monitoring and Observability
+
+### 1. Metrics Collection
+
+Essential metrics for streaming systems:
+
+- **Throughput** - Events processed per second
+- **Latency** - End-to-end and per-stage processing time
+- **Backpressure** - Buffer utilization and throttling events
+- **Error rates** - Processing failures and retries
+- **Resource utilization** - CPU, memory, network, and disk usage
+
+<Callout type="warning">
+  Monitoring streaming systems requires attention to both system-level metrics (CPU, memory) and application-level metrics (event counts, processing latency). A comprehensive monitoring strategy should include both types to provide complete visibility into system health.
+</Callout>
+
+### 2. Distributed Tracing
+
+Following events through complex streaming pipelines:
+
+<CodeBlock className="language-java">
+// Implementing distributed tracing in a Kafka Streams application
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapSetter;
+import org.apache.kafka.streams.processor.api.ProcessorContext;
+import org.apache.kafka.streams.processor.api.Record;
+import org.apache.kafka.streams.processor.api.Processor;
+
+public class TracedProcessor<K, V, KO, VO> implements Processor<K, V, KO, VO> {
+    private final OpenTelemetry openTelemetry;
+    private final Tracer tracer;
+    private final String spanName;
+    private ProcessorContext<KO, VO> context;
+    
+    public TracedProcessor(OpenTelemetry openTelemetry, String spanName) {
+        this.openTelemetry = openTelemetry;
+        this.tracer = openTelemetry.getTracer("kafka-streams-processor");
+        this.spanName = spanName;
+    }
+    
+    @Override
+    public void init(ProcessorContext<KO, VO> context) {
+        this.context = context;
+    }
+    
+    @Override
+    public void process(Record<K, V> record) {
+        // Extract trace context from record headers if present
+        Context extractedContext = openTelemetry.getPropagators().getTextMapPropagator()
+            .extract(Context.current(), record.headers(), new TextMapGetter<>() {
+                @Override
+                public Iterable<String> keys(Record.Headers headers) {
+                    return headers.keySet();
+                }
+                
+                @Override
+                public String get(Record.Headers headers, String key) {
+                    return headers.lastHeader(key) != null 
+                        ? new String(headers.lastHeader(key).value()) 
+                        : null;
+                }
+            });
+        
+        // Create a span for this processing step
+        Span span = tracer.spanBuilder(spanName)
+            .setParent(extractedContext)
+            .setSpanKind(SpanKind.CONSUMER)
+            .setAttribute("messaging.system", "kafka")
+            .setAttribute("messaging.destination", context.applicationId())
+            .setAttribute("messaging.kafka.topic", context.recordMetadata().get().topic())
+            .setAttribute("messaging.kafka.partition", context.recordMetadata().get().partition())
+            .setAttribute("messaging.kafka.offset", context.recordMetadata().get().offset())
+            .startSpan();
+        
+        try (var scope = span.makeCurrent()) {
+            // Perform the actual processing
+            processWithTracing(record);
+            
+            // Forward the processed record with updated trace context
+            Record<KO, VO> outputRecord = processRecord(record);
+            
+            // Inject trace context into outgoing record headers
+            openTelemetry.getPropagators().getTextMapPropagator()
+                .inject(Context.current(), outputRecord.headers(), new TextMapSetter<>() {
+                    @Override
+                    public void set(Record.Headers headers, String key, String value) {
+                        headers.add(key, value.getBytes());
+                    }
+                });
+            
+            // Forward the record with trace context
+            context.forward(outputRecord);
+        } catch (Exception e) {
+            span.recordException(e);
+            span.setStatus(StatusCode.ERROR, e.getMessage());
+            throw e;
+        } finally {
+            span.end();
+        }
+    }
+    
+    protected Record<KO, VO> processRecord(Record<K, V> record) {
+        // Implement actual record processing logic
+        // ...
+    }
+    
+    @Override
+    public void close() {
+        // Cleanup resources
+    }
+}
+</CodeBlock>
+
+### 3. Alerting and Incident Response
+
+Proactive monitoring and response:
+
+- **Alerting thresholds** - Setting appropriate warning and critical levels
+- **Alert correlation** - Grouping related alerts to reduce noise
+- **Runbooks** - Documented procedures for common issues
+- **Automated recovery** - Self-healing mechanisms for known problems
+
+## Deployment and Operations
+
+### 1. Containerization and Orchestration
+
+Managing streaming infrastructure with Kubernetes:
+
+<CodeBlock className="language-yaml">
+# Kafka Streams application deployment with Kubernetes StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: stream-processor
+spec:
+  serviceName: "stream-processor"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: stream-processor
+  template:
+    metadata:
+      labels:
+        app: stream-processor
+    spec:
+      terminationGracePeriodSeconds: 300  # Allow time for clean shutdown
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - stream-processor
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: processor
+        image: stream-processor:1.0.0
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 9010
+          name: jmx
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka-headless:9092"
+        - name: APPLICATION_ID
+          value: "streaming-app"
+        - name: APPLICATION_SERVER
+          value: "$(POD_NAME).stream-processor:8080"
+        - name: STATE_DIR
+          value: "/var/lib/kafka-streams"
+        - name: JAVA_TOOL_OPTIONS
+          value: "-XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/lib/kafka-streams/heapdump.hprof"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        volumeMounts:
+        - name: kafka-streams-state
+          mountPath: /var/lib/kafka-streams
+  volumeClaimTemplates:
+  - metadata:
+      name: kafka-streams-state
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "ssd"
+      resources:
+        requests:
+          storage: 50Gi
+---
+# Headless service for StatefulSet DNS
+apiVersion: v1
+kind: Service
+metadata:
+  name: stream-processor
+spec:
+  clusterIP: None
+  selector:
+    app: stream-processor
+  ports:
+  - port: 8080
+    name: http
+  - port: 9010
+    name: jmx
+</CodeBlock>
+
+### 2. CI/CD for Streaming Applications
+
+Continuous delivery practices for streaming systems:
+
+<ImageGallery 
+  images={[
+    { src: "/assets/images/streaming-cicd.jpg", alt: "CI/CD pipeline for streaming applications" },
+    { src: "/assets/images/canary-deployment.jpg", alt: "Canary deployment for stream processors" },
+    { src: "/assets/images/blue-green-streaming.jpg", alt: "Blue-green deployment for streaming systems" }
+  ]}
+  caption="CI/CD for streaming applications requires specialized patterns to maintain state and ensure smooth transitions"
+/>
+
+### 3. Disaster Recovery
+
+Ensuring resilience against failures:
+
+- **Multi-region replication** - Synchronizing data across geographic regions
+- **Backup and restore** - Regular snapshots of stream state
+- **Recovery testing** - Validating recovery procedures
+- **Chaos engineering** - Proactively testing failure scenarios
+
+## Case Studies and Real-World Examples
+
+### 1. Real-Time Fraud Detection
+
+Implementing streaming for financial transaction monitoring:
+
+<Chart 
+  data={[
+    { name: 'Batch (Daily)', detection_time: 1440, false_positives: 15, coverage: 95 },
+    { name: 'Micro-batch (Hourly)', detection_time: 60, false_positives: 12, coverage: 96 },
+    { name: 'Streaming (Real-time)', detection_time: 1, false_positives: 8, coverage: 98 }
+  ]}
+  title="Fraud Detection System Comparison"
+  xAxisLabel="Processing Approach"
+  yAxisLabel="Performance Metric"
+  dataKeys={['detection_time', 'false_positives', 'coverage']}
+  colors={['#ef4444', '#3b82f6', '#10b981']}
+/>
+
+### 2. IoT Monitoring and Analytics
+
+Processing sensor data at scale:
+
+<Callout type="tip">
+  When designing streaming pipelines for IoT data, implement a tiered architecture that processes simple anomalies at the edge, aggregates data at regional gateways, and performs complex analytics in the cloud. This approach reduces latency for critical alerts while optimizing bandwidth usage.
+</Callout>
+
+### 3. Real-Time Recommendation Engines
+
+Personalizing user experiences with streaming:
+
+<CodeBlock className="language-python">
+# Real-time recommendation engine with Kafka Streams and Redis
+from confluent_kafka import Consumer, Producer, KafkaError
+import json
+import redis
+import numpy as np
+from scipy.spatial.distance import cosine
+
+# Connect to Redis for feature store
+redis_client = redis.Redis(host='localhost', port=6379, db=0)
+
+# Configure Kafka consumer
+consumer_conf = {
+    'bootstrap.servers': 'localhost:9092',
+    'group.id': 'recommendation-engine',
+    'auto.offset.reset': 'latest'
+}
+consumer = Consumer(consumer_conf)
+consumer.subscribe(['user-events'])
+
+# Configure Kafka producer for recommendations
+producer_conf = {
+    'bootstrap.servers': 'localhost:9092'
+}
+producer = Producer(producer_conf)
+
+# Process user events and generate recommendations
+while True:
+    msg = consumer.poll(1.0)
+    
+    if msg is None:
+        continue
+    if msg.error():
+        if msg.error().code() == KafkaError._PARTITION_EOF:
+            continue
+        else:
+            print(f"Consumer error: {msg.error()}")
+            break
+            
+    try:
+        # Parse the user event
+        event = json.loads(msg.value().decode('utf-8'))
+        user_id = event['user_id']
+        item_id = event['item_id']
+        event_type = event['event_type']
+        timestamp = event['timestamp']
+        
+        # Get user embedding from feature store
+        user_embedding = get_user_embedding(user_id)
+        
+        # Get item embedding
+        item_embedding = get_item_embedding(item_id)
+        
+        # Update user embedding based on interaction
+        if event_type == 'view':
+            weight = 0.1
+        elif event_type == 'add_to_cart':
+            weight = 0.3
+        elif event_type == 'purchase':
+            weight = 0.5
+        else:
+            weight = 0.05
+            
+        # Simple online update of user embedding
+        updated_embedding = user_embedding + (weight * (item_embedding - user_embedding))
+        normalized_embedding = updated_embedding / np.linalg.norm(updated_embedding)
+        
+        # Store updated user embedding
+        store_user_embedding(user_id, normalized_embedding)
+        
+        # Find similar items using approximate nearest neighbor search
+        similar_items = find_similar_items(normalized_embedding, exclude_items=[item_id])
+        
+        # Generate personalized recommendations
+        recommendations = {
+            'user_id': user_id,
+            'timestamp': timestamp,
+            'recommended_items': similar_items[:10],
+            'context': {
+                'last_interaction': {
+                    'item_id': item_id,
+                    'event_type': event_type
+                }
+            }
+        }
+        
+        # Produce recommendations to output topic
+        producer.produce(
+            'user-recommendations',
+            key=user_id,
+            value=json.dumps(recommendations).encode('utf-8'),
+            callback=delivery_report
+        )
+        producer.poll(0)
+        
+    except Exception as e:
+        print(f"Error processing message: {e}")
+        
+consumer.close()
+</CodeBlock>
+
+## Conclusion
+
+Streaming architectures have evolved from simple data pipelines to sophisticated real-time data processing platforms. By implementing the patterns and practices outlined in this article, organizations can build scalable, resilient streaming systems that deliver immediate insights from high-velocity data.
+
+As data volumes continue to grow and latency requirements become more stringent, streaming architectures will play an increasingly central role in modern data platforms. The future of streaming will likely see further integration with AI/ML capabilities, edge computing, and event-driven architectures, enabling even more powerful real-time applications.
+
+<Callout type="info">
+  The most successful streaming implementations start with clear business requirements and carefully selected use cases before scaling to enterprise-wide deployments. Begin with high-value scenarios where real-time insights deliver tangible business benefits, then expand as your team builds expertise with streaming technologies.
+</Callout>
