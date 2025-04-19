@@ -30,6 +30,12 @@ export interface BlogPost extends BlogPostMeta {
 // Path to the MDX content directory
 const POSTS_PATH = path.join(process.cwd(), 'src/app/blog/content');
 
+// Simple in-memory cache for blog posts
+const postMetaCache = new Map<string, BlogPostMeta>();
+const postCache = new Map<string, BlogPost>();
+const allPostsMetaCache: { posts: BlogPostMeta[] | null; timestamp: number } = { posts: null, timestamp: 0 };
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
 // Get all MDX files from the content directory
 export function getPostSlugs(): string[] {
   try {
@@ -45,11 +51,16 @@ export function getPostSlugs(): string[] {
 // Get post metadata from frontmatter
 export function getPostMeta(slug: string): BlogPostMeta | null {
   try {
+    // Check cache first
+    if (postMetaCache.has(slug)) {
+      return postMetaCache.get(slug)!;
+    }
+
     const filePath = path.join(POSTS_PATH, `${slug}.mdx`);
     const fileContents = fs.readFileSync(filePath, 'utf8');
     const { data } = matter(fileContents);
     
-    return {
+    const postMeta = {
       slug,
       title: data.title,
       date: data.date,
@@ -62,6 +73,11 @@ export function getPostMeta(slug: string): BlogPostMeta | null {
       coverImage: data.coverImage,
       featured: data.featured || false,
     };
+
+    // Store in cache
+    postMetaCache.set(slug, postMeta);
+    
+    return postMeta;
   } catch (error) {
     console.error(`Error getting post meta for ${slug}:`, error);
     return null;
@@ -70,11 +86,21 @@ export function getPostMeta(slug: string): BlogPostMeta | null {
 
 // Get all posts metadata
 export function getAllPostsMeta(): BlogPostMeta[] {
+  // Check if we have a valid cached result
+  const now = Date.now();
+  if (allPostsMetaCache.posts && now - allPostsMetaCache.timestamp < CACHE_TTL) {
+    return allPostsMetaCache.posts;
+  }
+
   const slugs = getPostSlugs();
   const posts = slugs
     .map(slug => getPostMeta(slug))
     .filter((post): post is BlogPostMeta => post !== null)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  
+  // Update cache
+  allPostsMetaCache.posts = posts;
+  allPostsMetaCache.timestamp = now;
   
   return posts;
 }
@@ -97,6 +123,11 @@ export function getPostsByTag(tag: string): BlogPostMeta[] {
 // Get full post content with MDX processing
 export async function getPost(slug: string): Promise<BlogPost | null> {
   try {
+    // Check cache first
+    if (postCache.has(slug)) {
+      return postCache.get(slug)!;
+    }
+
     const filePath = path.join(POSTS_PATH, `${slug}.mdx`);
     const fileContents = fs.readFileSync(filePath, 'utf8');
     const { data, content } = matter(fileContents);
@@ -113,7 +144,7 @@ export async function getPost(slug: string): Promise<BlogPost | null> {
       scope: data,
     });
     
-    return {
+    const post = {
       slug,
       title: data.title,
       date: data.date,
@@ -128,6 +159,11 @@ export async function getPost(slug: string): Promise<BlogPost | null> {
       content,
       mdxSource,
     };
+
+    // Store in cache
+    postCache.set(slug, post);
+    
+    return post;
   } catch (error) {
     console.error(`Error getting post for ${slug}:`, error);
     return null;

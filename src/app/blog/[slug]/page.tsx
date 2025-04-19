@@ -1,217 +1,217 @@
-// This is now a React Server Component
-import React from 'react';
-import { notFound } from 'next/navigation';
+'use client';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { MDXRemote } from 'next-mdx-remote';
+import { serialize } from 'next-mdx-remote/serialize';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import AnimatedSection from '@/components/animation/AnimatedSection';
-import Link from 'next/link';
-import { Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getPostSlugs, getPostMeta, getRelatedPosts } from '@/lib/mdx-utils';
+import BlogPostLayout from '@/components/blog/BlogPostLayout';
+import MDXComponents from '@/components/mdx/MDXComponents';
 import BlogJsonLd from '@/components/blog/BlogJsonLd';
-import dynamic from 'next/dynamic';
-import Image from 'next/image';
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
+import { ErrorBoundary } from 'react-error-boundary';
 
-// Client components need to be dynamically imported
-const BlogPostLayout = dynamic(() => import('@/components/blog/BlogPostLayout'), { ssr: false });
-const SocialShare = dynamic(() => import('@/components/blog/SocialShare'), { ssr: false });
-const MDXContent = dynamic(() => import('@/components/blog/MDXContent'), { ssr: false });
-
-// --- SSG Implementation ---
-
-// Generate static paths at build time
-export async function generateStaticParams() {
-  const slugs = getPostSlugs();
-  return slugs.map((slug) => ({
-    slug: slug,
-  }));
-}
-
-// Ensure only statically generated paths are allowed (optional, for full SSG)
-export const dynamicParams = false;
-
-// --- Metadata Generation ---
-
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = getPostMeta(params.slug);
-
-  if (!post) {
-    return {
-      title: 'Post Not Found',
-    };
-  }
-
-  return {
-    title: post.title,
-    description: post.excerpt || `Read about ${post.category}: ${post.title}. Written by ${post.author} on ${post.date}.`,
-    alternates: {
-      canonical: `https://agharib.com/blog/${params.slug}`
-    },
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      type: 'article',
-      url: `https://agharib.com/blog/${params.slug}`,
-      images: post.coverImage ? [{ url: post.coverImage }] : [],
-    },
-  };
-}
-
-// --- Page Component (React Server Component) ---
-
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const { slug } = params; // Get slug from params passed by Next.js
-
-  // Fetch current post data server-side
-  const postMeta = getPostMeta(slug);
-
-  // Handle post not found server-side
-  if (!postMeta) {
-    notFound(); // Trigger 404 page
-  }
-
-  // Read MDX content directly
-  const contentPath = path.join(process.cwd(), 'src/app/blog/content', `${slug}.mdx`);
-  let content = '';
-  try {
-    const fileContents = fs.readFileSync(contentPath, 'utf8');
-    const { content: mdxContent } = matter(fileContents);
-    content = mdxContent;
-  } catch (error) {
-    console.error(`Error reading MDX file for ${slug}:`, error);
-  }
-
-  // Fetch all slugs to determine next/previous posts
-  const slugs = getPostSlugs();
-  const currentIndex = slugs.findIndex(s => s === slug);
-
-  const prevSlug = currentIndex > 0 ? slugs[currentIndex - 1] : null;
-  const nextSlug = currentIndex < slugs.length - 1 ? slugs[currentIndex + 1] : null;
-
-  // Fetch titles for prev/next posts
-  const prevPostMeta = prevSlug ? getPostMeta(prevSlug) : null;
-  const nextPostMeta = nextSlug ? getPostMeta(nextSlug) : null;
-
-  const prevPost = prevPostMeta ? { slug: prevPostMeta.slug, title: prevPostMeta.title } : null;
-  const nextPost = nextPostMeta ? { slug: nextPostMeta.slug, title: nextPostMeta.title } : null;
-
-  // Get related posts
-  const relatedPosts = getRelatedPosts(slug, 3);
-
-  // Get the canonical URL for the blog post
-  const baseUrl = 'https://agharib.com';
-  const canonicalUrl = `${baseUrl}/blog/${slug}`;
-
+// Fallback component for error boundary
+function ErrorFallback({ error, resetErrorBoundary }) {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      {/* Add JSON-LD for SEO */}
-      <BlogJsonLd post={postMeta} url={canonicalUrl} />
+    <div className="p-6 bg-red-50 dark:bg-red-900/20 rounded-lg my-8 text-center">
+      <h2 className="text-xl font-bold text-red-700 dark:text-red-400 mb-4">
+        Something went wrong loading this content
+      </h2>
+      <p className="text-red-600 dark:text-red-300 mb-4">{error.message}</p>
+      <button
+        onClick={resetErrorBoundary}
+        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+      >
+        Try again
+      </button>
+    </div>
+  );
+}
 
-      <Header />
+export default function BlogPost({ params }) {
+  const { slug } = params;
+  const [postMeta, setPostMeta] = useState(null);
+  const [mdxSource, setMdxSource] = useState(null);
+  const [relatedPosts, setRelatedPosts] = useState([]);
+  const [prevPost, setPrevPost] = useState(null);
+  const [nextPost, setNextPost] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-      <main className="pt-24 pb-16">
-        <AnimatedSection className="py-12 bg-gray-50 dark:bg-gray-800">
-          <div className="container mx-auto px-4">
-            <Link
-              href="/blog"
-              className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline mb-6"
-            >
-              ← Back to all articles
-            </Link>
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-            <div className="max-w-4xl mx-auto">
-              <div className="mb-4">
-                <span className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm">
-                  {postMeta.category}
-                </span>
-                {postMeta.tags && postMeta.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {postMeta.tags.map(tag => (
-                      <span key={tag} className="inline-block px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-xs">
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
+        // Fetch post data
+        const response = await fetch(`/api/blog/post?slug=${slug}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch post');
+        }
+        
+        const data = await response.json();
+        
+        if (data.post) {
+          setPostMeta(data.post);
+          
+          // Process MDX content
+          if (data.post.content) {
+            const mdxSource = await serialize(data.post.content, {
+              mdxOptions: {
+                development: process.env.NODE_ENV === 'development',
+              },
+            });
+            setMdxSource(mdxSource);
+          }
+          
+          // Set related posts
+          if (data.relatedPosts) {
+            setRelatedPosts(data.relatedPosts);
+          }
+          
+          // Set previous and next posts
+          if (data.prevPost) {
+            setPrevPost(data.prevPost);
+          }
+          
+          if (data.nextPost) {
+            setNextPost(data.nextPost);
+          }
+        } else {
+          throw new Error('Post not found');
+        }
+      } catch (err) {
+        console.error('Error fetching blog post:', err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-                {postMeta.title}
-              </h1>
+    if (slug) {
+      fetchPost();
+    }
+  }, [slug]);
 
-              <div className="flex flex-wrap items-center justify-between mb-8">
-                <div className="flex flex-wrap items-center gap-4 text-gray-500 dark:text-gray-400">
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    <span>{postMeta.date}</span>
-                  </div>
-                  {postMeta.readingTime && (
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-2" />
-                      <span>{postMeta.readingTime}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center">
-                    <span>By {postMeta.author}</span>
-                  </div>
-                </div>
-
-                {/* Social Share - Both Desktop and Mobile */}
-                <div>
-                  <SocialShare title={postMeta.title} slug={slug} />
-                </div>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <Header />
+        <main>
+          <div className="container mx-auto px-4 py-12">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mx-auto mb-4"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mx-auto mb-12"></div>
+              <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded mb-8"></div>
+              <div className="space-y-4">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
               </div>
             </div>
           </div>
-        </AnimatedSection>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <Header />
+        <main>
+          <div className="container mx-auto px-4 py-12">
+            <div className="bg-red-50 dark:bg-red-900/20 p-8 rounded-lg text-center">
+              <h1 className="text-2xl font-bold text-red-700 dark:text-red-400 mb-4">
+                Error Loading Blog Post
+              </h1>
+              <p className="text-red-600 dark:text-red-300 mb-6">{error}</p>
+              <Link 
+                href="/blog" 
+                className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Return to Blog
+              </Link>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!postMeta) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <Header />
+        <main>
+          <div className="container mx-auto px-4 py-12">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-8 rounded-lg text-center">
+              <h1 className="text-2xl font-bold text-yellow-700 dark:text-yellow-400 mb-4">
+                Blog Post Not Found
+              </h1>
+              <p className="text-yellow-600 dark:text-yellow-300 mb-6">
+                The blog post you're looking for doesn't exist or has been moved.
+              </p>
+              <Link 
+                href="/blog" 
+                className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Return to Blog
+              </Link>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      <BlogJsonLd post={postMeta} />
+      <Header />
+      
+      <main>
         <section className="py-12">
           <div className="container mx-auto px-4">
-            <BlogPostLayout title={postMeta.title} slug={slug}>
-              {postMeta.coverImage && (
-                <div className="mb-8 rounded-lg overflow-hidden relative h-96">
-                  <Image
-                    src={postMeta.coverImage}
-                    alt={postMeta.title}
-                    width={1200}
-                    height={630}
-                    className="w-full h-full object-cover"
-                  />
+            <BlogPostLayout
+              title={postMeta.title}
+              date={postMeta.date}
+              author={postMeta.author}
+              readingTime={postMeta.readingTime}
+              category={postMeta.category}
+              tags={postMeta.tags}
+              coverImage={postMeta.coverImage}
+            >
+              {/* MDX Content */}
+              <ErrorBoundary
+                FallbackComponent={ErrorFallback}
+                onReset={() => {
+                  // Reset the state when the user clicks "Try again"
+                  window.location.reload();
+                }}
+              >
+                <div className="prose prose-lg dark:prose-invert max-w-none">
+                  {mdxSource ? (
+                    <MDXRemote {...mdxSource} components={MDXComponents} />
+                  ) : (
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Content is being processed...
+                    </p>
+                  )}
                 </div>
-              )}
-
-              <article className="prose prose-lg dark:prose-invert max-w-none blog-content">
-                {/* Use the MDXContent component to render the content */}
-                <MDXContent content={content} />
-              </article>
-
-              {/* Tags */}
-              {postMeta.tags && postMeta.tags.length > 0 && (
-                <div className="mt-8">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Tags</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {postMeta.tags.map(tag => (
-                      <Link 
-                        key={tag} 
-                        href={`/blog?tag=${tag}`}
-                        className="inline-block px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition"
-                      >
-                        #{tag}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Author info */}
+              </ErrorBoundary>
+              
+              {/* Author Bio */}
               <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  About the Author
-                </h3>
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl font-bold">
+                <div className="flex items-center">
+                  <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold">
                     {postMeta.authorImage ? (
                       <Image 
                         src={postMeta.authorImage} 
@@ -232,7 +232,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                   </div>
                 </div>
               </div>
-
+              
               {/* Related Posts */}
               {relatedPosts.length > 0 && (
                 <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
@@ -273,14 +273,14 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                   </div>
                 </div>
               )}
-
+              
               {/* Previous/Next article navigation */}
               <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex flex-col md:flex-row justify-between">
                   {prevPost && (
                     <Link href={`/blog/${prevPost.slug}`} className="group mb-4 md:mb-0">
                       <div className="flex items-center text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                        <ChevronLeft className="h-5 w-5 mr-2" />
+                        <ChevronLeft className="h-5 w-5 mr-2" aria-hidden="true" />
                         <div>
                           <div className="text-sm">Previous Article</div>
                           <div className="text-base font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400">
@@ -290,7 +290,6 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                       </div>
                     </Link>
                   )}
-
                   {nextPost && (
                     <Link href={`/blog/${nextPost.slug}`} className="group md:text-right">
                       <div className="flex items-center justify-end text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400">
@@ -300,7 +299,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                             {nextPost.title}
                           </div>
                         </div>
-                        <ChevronRight className="h-5 w-5 ml-2" />
+                        <ChevronRight className="h-5 w-5 ml-2" aria-hidden="true" />
                       </div>
                     </Link>
                   )}
@@ -310,7 +309,6 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           </div>
         </section>
       </main>
-
       <Footer />
     </div>
   );

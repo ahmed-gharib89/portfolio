@@ -1,83 +1,96 @@
 'use client';
-
+import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
+import ThemeToggle from '@/components/ThemeToggle';
 
-// Lazy load components to reduce initial bundle size
-const ThemeToggle = React.lazy(() => import('../ThemeToggle'));
+interface HeaderProps {
+  scrollToSection?: (sectionId: string) => void;
+}
 
-const Header = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
+const Header: React.FC<HeaderProps> = ({ scrollToSection }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-
-  // Only run on client side
+  const [activeSection, setActiveSection] = useState('');
+  
   useEffect(() => {
     setMounted(true);
-    
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
+  
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
-
+  
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
-
+  
+  // Handle section navigation with smooth scrolling
+  const handleSectionClick = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    // Only handle section navigation on the home page
+    if (window.location.pathname === '/') {
+      e.preventDefault();
+      if (scrollToSection) {
+        scrollToSection(sectionId);
+      } else {
+        // Fallback if scrollToSection is not provided
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }
+      setActiveSection(sectionId);
+      closeMobileMenu();
+    }
+  };
+  
+  // Define navigation items to avoid duplication
+  const navigationItems = [
+    { href: "/", label: "Home", sectionId: null },
+    { href: "/#about", label: "About", sectionId: "about" },
+    { href: "/#experience", label: "Experience", sectionId: "experience" },
+    { href: "/#projects", label: "Projects", sectionId: "projects" },
+    { href: "/#skills", label: "Skills", sectionId: "skills" },
+    { href: "/blog", label: "Blog", sectionId: null },
+    { href: "/#contact", label: "Contact", sectionId: "contact" }
+  ];
+  
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-md py-3' 
-          : 'bg-transparent py-5'
-      }`}
-    >
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <a href="/" className="flex items-center">
-          <div className="w-10 h-10 flex items-center justify-center">
-            <Image 
-              src="/assets/images/dark.png" 
-              alt="Ahmed Gharib Logo" 
-              width={40} 
-              height={40} 
-              className="rounded-md"
-            />
-          </div>
-          <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
+    <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm">
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <Link href="/" className="flex items-center">
+          <span className="text-xl font-bold text-gray-900 dark:text-white">
             Ahmed Gharib
           </span>
-        </a>
+        </Link>
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          <a href="/" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-            Home
-          </a>
-          <a href="/about" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-            About
-          </a>
-          <a href="/experience" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-            Experience
-          </a>
-          <a href="/projects" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-            Projects
-          </a>
-          <a href="/skills" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-            Skills
-          </a>
-          <a href="/blog" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-            Blog
-          </a>
-          <a href="/contact" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-            Contact
-          </a>
+          {navigationItems.map((item) => (
+            item.sectionId ? (
+              <a 
+                key={item.label}
+                href={item.href} 
+                className={`nav-link text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors ${
+                  activeSection === item.sectionId ? 'text-blue-600 dark:text-blue-400 font-medium' : ''
+                }`}
+                onClick={(e) => handleSectionClick(e, item.sectionId)}
+              >
+                {item.label}
+              </a>
+            ) : (
+              <Link 
+                key={item.label}
+                href={item.href} 
+                className="nav-link text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                {item.label}
+              </Link>
+            )
+          ))}
           
           {/* Theme Toggle */}
           {mounted && (
@@ -120,55 +133,29 @@ const Header = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900 pt-20">
             <nav className="flex flex-col items-center space-y-6 p-6">
-              <a 
-                href="/" 
-                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                onClick={closeMobileMenu}
-              >
-                Home
-              </a>
-              <a 
-                href="/about" 
-                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                onClick={closeMobileMenu}
-              >
-                About
-              </a>
-              <a 
-                href="/experience" 
-                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                onClick={closeMobileMenu}
-              >
-                Experience
-              </a>
-              <a 
-                href="/projects" 
-                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                onClick={closeMobileMenu}
-              >
-                Projects
-              </a>
-              <a 
-                href="/skills" 
-                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                onClick={closeMobileMenu}
-              >
-                Skills
-              </a>
-              <a 
-                href="/blog" 
-                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                onClick={closeMobileMenu}
-              >
-                Blog
-              </a>
-              <a 
-                href="/contact" 
-                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                onClick={closeMobileMenu}
-              >
-                Contact
-              </a>
+              {navigationItems.map((item) => (
+                item.sectionId ? (
+                  <a 
+                    key={item.label}
+                    href={item.href} 
+                    className={`text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors ${
+                      activeSection === item.sectionId ? 'text-blue-600 dark:text-blue-400 font-medium' : ''
+                    }`}
+                    onClick={(e) => handleSectionClick(e, item.sectionId)}
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link 
+                    key={item.label}
+                    href={item.href} 
+                    className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    onClick={closeMobileMenu}
+                  >
+                    {item.label}
+                  </Link>
+                )
+              ))}
             </nav>
           </div>
         )}

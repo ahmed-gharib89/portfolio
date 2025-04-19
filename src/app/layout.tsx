@@ -4,29 +4,25 @@ import '@/styles/custom-scrollbar.css'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import StructuredData from '@/components/StructuredData'
 import { Montserrat, Open_Sans, Fira_Code } from 'next/font/google'
-
 // Define the fonts
 const montserrat = Montserrat({ 
   subsets: ['latin'],
   variable: '--font-montserrat' 
 })
-
 const openSans = Open_Sans({ 
   subsets: ['latin'],
   variable: '--font-opensans' 
 })
-
 const firaCode = Fira_Code({ 
   subsets: ['latin'],
   variable: '--font-firacode' 
 })
-
 // Using CSS variables for our self-hosted fonts
 const fontVariables = {
   className: 'self-hosted-fonts'
 }
-
 export const metadata: Metadata = {
+  metadataBase: new URL('https://agharib.com'),
   title: 'Ahmed Gharib | Data Engineer & Analytics Professional',
   description: 'Portfolio website of Ahmed Gharib, an experienced Data Engineer with expertise in Microsoft Azure, AWS, and Google Cloud platforms.',
   icons: {
@@ -51,7 +47,6 @@ export const metadata: Metadata = {
     }
   }
 }
-
 export default function RootLayout({
   children
 }: Readonly<{
@@ -68,7 +63,6 @@ export default function RootLayout({
                 try {
                   const savedTheme = localStorage.getItem('theme');
                   const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
                   if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
                     document.documentElement.classList.add('dark');
                   } else {
