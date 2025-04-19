@@ -1,26 +1,29 @@
-const withMDX = require('@next/mdx')({
+import nextMDX from '@next/mdx';
+import remarkGfm from 'remark-gfm';
+import rehypePrism from 'rehype-prism-plus';
+import rehypeSlug from 'rehype-slug';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+
+const withMDX = nextMDX({
   extension: /\.mdx?$/,
   options: {
-    remarkPlugins: [],
-    rehypePlugins: [],
-    // If you use `MDXProvider`, uncomment the following line.
+    remarkPlugins: [remarkGfm],
+    rehypePlugins: [
+      rehypePrism,
+      rehypeSlug,
+      [rehypeAutolinkHeadings, { behavior: 'wrap' }],
+    ],
     providerImportSource: "@mdx-js/react",
   },
 });
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configure pageExtensions to include md and mdx
-  pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
-  // Optionally, add any other Next.js config below
   reactStrictMode: true,
+  pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
   images: {
-    domains: ['images.unsplash.com'],
-  },
-  experimental: {
-    mdxRs: true,
+    domains: ['source.unsplash.com'],
   },
 };
 
-// Merge MDX config with Next.js config
-module.exports = withMDX(nextConfig);
+export default withMDX(nextConfig);
