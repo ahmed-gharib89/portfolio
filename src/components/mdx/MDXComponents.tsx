@@ -3,6 +3,12 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import CodeBlock from './CodeBlock';
+import YouTubeEmbed from './YouTubeEmbed';
+import TwitterEmbed from './TwitterEmbed';
+import GistEmbed from './GistEmbed';
+import Chart from './Chart';
+import ImageGallery from './ImageGallery';
 
 // Custom heading components
 const H1 = ({ children }: { children: React.ReactNode }) => (
@@ -82,22 +88,6 @@ const BlockQuote = ({ children }: { children: React.ReactNode }) => (
     {children}
   </blockquote>
 );
-
-// Custom code block component
-const CodeBlock = ({ children, className }: { children: React.ReactNode; className?: string }) => {
-  const language = className ? className.replace('language-', '') : '';
-  
-  return (
-    <div className="my-6 rounded-lg overflow-hidden">
-      <div className="bg-gray-800 text-gray-200 px-4 py-2 text-sm">
-        {language || 'code'}
-      </div>
-      <pre className="bg-gray-900 p-4 overflow-x-auto">
-        <code className={className}>{children}</code>
-      </pre>
-    </div>
-  );
-};
 
 // Custom inline code component
 const InlineCode = ({ children }: { children: React.ReactNode }) => (
@@ -181,7 +171,7 @@ export const MDXComponents = {
   a: CustomLink,
   img: CustomImage,
   blockquote: BlockQuote,
-  pre: CodeBlock,
+  pre: CodeBlock, // Updated to use the new CodeBlock component
   code: InlineCode,
   ul: UL,
   ol: OL,
@@ -193,6 +183,11 @@ export const MDXComponents = {
   th: TH,
   td: TD,
   Callout,
+  YouTubeEmbed,
+  TwitterEmbed,
+  GistEmbed,
+  Chart,
+  ImageGallery,
 };
 
 export default MDXComponents;

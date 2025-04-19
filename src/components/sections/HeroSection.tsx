@@ -128,10 +128,14 @@ const HeroSection = () => {
               <Image 
                 src="/assets/images/AhmedGharib.png"
                 alt="Ahmed Gharib"
-                fill
+                width={320}
+                height={320}
                 sizes="(max-width: 768px) 256px, 320px"
                 className="object-cover"
                 priority
+                quality={90}
+                placeholder="blur"
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAEtAJJUn4CnAAAAABJRU5ErkJggg=="
               />
             </div>
           </motion.div>

@@ -1,218 +1,171 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Menu, X } from 'lucide-react';
-import { usePathname } from 'next/navigation';
-import ThemeToggle from '@/components/ThemeToggleWrapper';
+import React, { useState, useEffect } from 'react';
+
+// Lazy load components to reduce initial bundle size
+const ThemeToggle = React.lazy(() => import('../ThemeToggle'));
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const pathname = usePathname();
-  // Consider all section paths as home page to ensure navigation works consistently
-  const sectionPaths = ['/', '/home', '/about', '/experience', '/projects', '/skills', '/contact'];
-  const isHomePage = sectionPaths.includes(pathname);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  // Only run on client side
+  useEffect(() => {
+    setMounted(true);
+    
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, sectionPath: string, sectionId: string) => {
-    e.preventDefault();
-    
-    // If not on homepage, navigate to homepage with section path
-    if (!isHomePage) {
-      window.location.href = sectionPath;
-      return;
-    }
-    
-    const targetElement = document.querySelector(`#${sectionId}`);
-    
-    if (targetElement) {
-      // Close menu if open
-      if (isMenuOpen) {
-        setIsMenuOpen(false);
-      }
-
-      // Scroll to the element with smooth animation
-      targetElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-
-      // Update URL without causing a page reload
-      window.history.pushState(null, '', sectionPath);
-    }
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
   };
 
   return (
-    <header className="fixed w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-50 shadow-sm">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center">
-          <Image 
-            src="/assets/images/dark.png" 
-            alt="Ahmed Gharib Logo" 
-            width={40} 
-            height={40} 
-            className="mr-2"
-          />
-          <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">Ahmed Gharib</span>
-        </Link>
-
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-md py-3' 
+          : 'bg-transparent py-5'
+      }`}
+    >
+      <div className="container mx-auto px-4 flex justify-between items-center">
+        <a href="/" className="flex items-center">
+          <div className="w-10 h-10 bg-blue-600 text-white rounded-md flex items-center justify-center font-bold text-xl">
+            AG
+          </div>
+          <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
+            Ahmed Gharib
+          </span>
+        </a>
+        
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center">
-          <nav className="flex space-x-8 mr-4">
-            <a 
-              href="/home" 
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/home' ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-              onClick={(e) => handleSmoothScroll(e, '/home', 'hero')}
-            >
-              Home
-            </a>
-            <a 
-              href="/about" 
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/about' ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-              onClick={(e) => handleSmoothScroll(e, '/about', 'about')}
-            >
-              About
-            </a>
-            <a 
-              href="/experience" 
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/experience' ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-              onClick={(e) => handleSmoothScroll(e, '/experience', 'experience')}
-            >
-              Experience
-            </a>
-            <a 
-              href="/projects" 
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/projects' ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-              onClick={(e) => handleSmoothScroll(e, '/projects', 'projects')}
-            >
-              Projects
-            </a>
-            <a 
-              href="/skills" 
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/skills' ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-              onClick={(e) => handleSmoothScroll(e, '/skills', 'skills')}
-            >
-              Skills
-            </a>
-            <Link 
-              href="/blog"
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/blog' || pathname.startsWith('/blog/') ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-            >
-              Blog
-            </Link>
-            <a 
-              href="/contact" 
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/contact' ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-              onClick={(e) => handleSmoothScroll(e, '/contact', 'contact')}
-            >
-              Contact
-            </a>
-          </nav>
+        <nav className="hidden md:flex items-center space-x-6">
+          <a href="/" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            Home
+          </a>
+          <a href="/about" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            About
+          </a>
+          <a href="/experience" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            Experience
+          </a>
+          <a href="/projects" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            Projects
+          </a>
+          <a href="/skills" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            Skills
+          </a>
+          <a href="/blog" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            Blog
+          </a>
+          <a href="/contact" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            Contact
+          </a>
           
           {/* Theme Toggle */}
-          <ThemeToggle />
-        </div>
-
-        {/* Mobile Header Actions */}
-        <div className="md:hidden flex items-center space-x-2">
-          <ThemeToggle />
+          {mounted && (
+            <React.Suspense fallback={<div className="w-6 h-6"></div>}>
+              <ThemeToggle />
+            </React.Suspense>
+          )}
+        </nav>
+        
+        {/* Mobile Menu Button */}
+        <div className="flex items-center md:hidden">
+          {mounted && (
+            <React.Suspense fallback={<div className="w-6 h-6 mr-4"></div>}>
+              <ThemeToggle />
+            </React.Suspense>
+          )}
+          
           <button 
-            className="text-gray-700 dark:text-gray-200"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
+            onClick={toggleMobileMenu}
+            className="ml-4 text-gray-700 dark:text-gray-300 focus:outline-none"
+            aria-label="Toggle mobile menu"
           >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-6 w-6" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              {isMobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
           </button>
         </div>
-      </div>
-
-      {/* Mobile Navigation */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-900 shadow-md">
-          <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
-            <a 
-              href="/home" 
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/home' ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-              onClick={(e) => handleSmoothScroll(e, '/home', 'hero')}
-            >
-              Home
-            </a>
-            <a 
-              href="/about" 
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/about' ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-              onClick={(e) => handleSmoothScroll(e, '/about', 'about')}
-            >
-              About
-            </a>
-            <a 
-              href="/experience" 
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/experience' ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-              onClick={(e) => handleSmoothScroll(e, '/experience', 'experience')}
-            >
-              Experience
-            </a>
-            <a 
-              href="/projects" 
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/projects' ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-              onClick={(e) => handleSmoothScroll(e, '/projects', 'projects')}
-            >
-              Projects
-            </a>
-            <a 
-              href="/skills" 
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/skills' ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-              onClick={(e) => handleSmoothScroll(e, '/skills', 'skills')}
-            >
-              Skills
-            </a>
-            <Link 
-              href="/blog"
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/blog' || pathname.startsWith('/blog/') ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-            >
-              Blog
-            </Link>
-            <a 
-              href="/contact" 
-              className={`text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                pathname === '/contact' ? 'text-blue-600 dark:text-blue-400' : ''
-              }`}
-              onClick={(e) => handleSmoothScroll(e, '/contact', 'contact')}
-            >
-              Contact
-            </a>
+        
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden fixed inset-0 z-50 bg-white dark:bg-gray-900 pt-20">
+            <nav className="flex flex-col items-center space-y-6 p-6">
+              <a 
+                href="/" 
+                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                Home
+              </a>
+              <a 
+                href="/about" 
+                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                About
+              </a>
+              <a 
+                href="/experience" 
+                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                Experience
+              </a>
+              <a 
+                href="/projects" 
+                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                Projects
+              </a>
+              <a 
+                href="/skills" 
+                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                Skills
+              </a>
+              <a 
+                href="/blog" 
+                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                Blog
+              </a>
+              <a 
+                href="/contact" 
+                className="text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                Contact
+              </a>
+            </nav>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 };
