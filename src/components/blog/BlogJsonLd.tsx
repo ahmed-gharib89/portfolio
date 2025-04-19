@@ -1,8 +1,8 @@
 import React from 'react';
-import { BlogPost } from '@/lib/blog-api';
+import { BlogPostMeta } from '@/lib/mdx-utils';
 
 interface BlogJsonLdProps {
-  post: BlogPost;
+  post: BlogPostMeta;
   url: string;
 }
 
@@ -16,7 +16,7 @@ const BlogJsonLd: React.FC<BlogJsonLdProps> = ({ post, url }) => {
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt || `Read about ${post.category}: ${post.title}`,
-    image: post.image ? `https://agharib.com${post.image}` : undefined,
+    image: post.coverImage ? `https://agharib.com${post.coverImage}` : undefined,
     datePublished: datePublished,
     dateModified: datePublished,
     author: {

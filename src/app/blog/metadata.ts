@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 // Export metadata function for dynamic metadata generation
 export function generateBlogMetadata(posts: BlogPostMeta[]): Metadata {
   // Extract categories and tags for SEO
-  const categories = [...new Set(posts.map(post => post.category))];
-  const tags = [...new Set(posts.flatMap(post => post.tags || []))];
+  const categories = Array.from(new Set(posts.map(post => post.category)));
+  const tags = Array.from(new Set(posts.flatMap(post => post.tags || [])));
   
   return {
     keywords: [...categories, ...tags],
