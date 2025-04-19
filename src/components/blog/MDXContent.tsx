@@ -1,17 +1,42 @@
 'use client';
 
 import React from 'react';
-import { MDXProvider } from '@mdx-js/react';
+import { MDXRemote } from 'next-mdx-remote';
 import { MDXComponents } from '../mdx/MDXComponents';
+import { remark } from 'remark';
+import html from 'remark-html';
+import remarkGfm from 'remark-gfm';
 
-// This component will be used as a wrapper for MDX content
-const MDXContent = ({ children }: { children: React.ReactNode }) => {
+interface MDXContentProps {
+  content: string;
+}
+
+const MDXContent: React.FC<MDXContentProps> = ({ content }) => {
+  const [renderedContent, setRenderedContent] = React.useState('');
+
+  React.useEffect(() => {
+    const processContent = async () => {
+      try {
+        // Process markdown content with remark
+        const processedContent = await remark()
+          .use(html)
+          .use(remarkGfm)
+          .process(content);
+        
+        setRenderedContent(processedContent.toString());
+      } catch (error) {
+        console.error('Error processing MDX content:', error);
+        setRenderedContent('<p>Error rendering content</p>');
+      }
+    };
+
+    processContent();
+  }, [content]);
+
   return (
-    <MDXProvider components={MDXComponents}>
-      <div className="prose prose-lg dark:prose-invert max-w-none blog-content">
-        {children}
-      </div>
-    </MDXProvider>
+    <div className="prose prose-lg dark:prose-invert max-w-none blog-content">
+      <div dangerouslySetInnerHTML={{ __html: renderedContent }} />
+    </div>
   );
 };
 

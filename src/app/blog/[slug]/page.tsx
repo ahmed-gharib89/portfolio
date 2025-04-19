@@ -183,8 +183,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               )}
 
               <article className="prose prose-lg dark:prose-invert max-w-none blog-content">
-                {/* For now, use dangerouslySetInnerHTML as a fallback */}
-                <div dangerouslySetInnerHTML={{ __html: content }} />
+                {/* Use the MDXContent component to render the content */}
+                <MDXContent content={content} />
               </article>
 
               {/* Tags */}
