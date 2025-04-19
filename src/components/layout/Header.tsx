@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 // Lazy load components to reduce initial bundle size
 const ThemeToggle = React.lazy(() => import('../ThemeToggle'));
@@ -40,8 +41,14 @@ const Header = () => {
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
         <a href="/" className="flex items-center">
-          <div className="w-10 h-10 bg-blue-600 text-white rounded-md flex items-center justify-center font-bold text-xl">
-            AG
+          <div className="w-10 h-10 flex items-center justify-center">
+            <Image 
+              src="/assets/images/dark.png" 
+              alt="Ahmed Gharib Logo" 
+              width={40} 
+              height={40} 
+              className="rounded-md"
+            />
           </div>
           <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
             Ahmed Gharib
