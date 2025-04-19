@@ -11,6 +11,7 @@ import BlogPostLayout from '@/components/blog/BlogPostLayout';
 import MDXComponents from '@/components/mdx/MDXComponents';
 import BlogJsonLd from '@/components/blog/BlogJsonLd';
 import { ErrorBoundary } from 'react-error-boundary';
+import { getPostBySlug, getRelatedPosts, getAllPostsMeta } from '@/lib/blog-api';
 
 // Fallback component for error boundary
 function ErrorFallback({ error, resetErrorBoundary }) {
@@ -46,42 +47,39 @@ export default function BlogPost({ params }) {
         setIsLoading(true);
         setError(null);
 
-        // Fetch post data
-        const response = await fetch(`/api/blog/post?slug=${slug}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch post');
+        // Fetch post data directly from the blog-api
+        const post = await getPostBySlug(slug);
+        
+        if (!post) {
+          throw new Error('Post not found');
         }
         
-        const data = await response.json();
+        setPostMeta(post);
         
-        if (data.post) {
-          setPostMeta(data.post);
-          
-          // Process MDX content
-          if (data.post.content) {
-            const mdxSource = await serialize(data.post.content, {
-              mdxOptions: {
-                development: process.env.NODE_ENV === 'development',
-              },
-            });
-            setMdxSource(mdxSource);
-          }
-          
-          // Set related posts
-          if (data.relatedPosts) {
-            setRelatedPosts(data.relatedPosts);
-          }
-          
-          // Set previous and next posts
-          if (data.prevPost) {
-            setPrevPost(data.prevPost);
-          }
-          
-          if (data.nextPost) {
-            setNextPost(data.nextPost);
-          }
-        } else {
-          throw new Error('Post not found');
+        // Process MDX content
+        if (post.content) {
+          const mdxSource = await serialize(post.content, {
+            mdxOptions: {
+              development: process.env.NODE_ENV === 'development',
+            },
+          });
+          setMdxSource(mdxSource);
+        }
+        
+        // Set related posts
+        const relatedPostsData = getRelatedPosts(slug, 3);
+        setRelatedPosts(relatedPostsData);
+        
+        // Set previous and next posts
+        const allPosts = await getAllPostsMeta();
+        const currentIndex = allPosts.findIndex(p => p.slug === slug);
+        
+        if (currentIndex < allPosts.length - 1) {
+          setPrevPost(allPosts[currentIndex + 1]);
+        }
+        
+        if (currentIndex > 0) {
+          setNextPost(allPosts[currentIndex - 1]);
         }
       } catch (err) {
         console.error('Error fetching blog post:', err);
@@ -182,12 +180,13 @@ export default function BlogPost({ params }) {
           <div className="container mx-auto px-4">
             <BlogPostLayout
               title={postMeta.title}
-              date={postMeta.date}
+              slug={postMeta.slug}
               author={postMeta.author}
-              readingTime={postMeta.readingTime}
+              date={postMeta.date}
+              readingTime={postMeta.readingTime || '5 min read'}
               category={postMeta.category}
-              tags={postMeta.tags}
-              coverImage={postMeta.coverImage}
+              tags={postMeta.tags || []}
+              coverImage={postMeta.image}
             >
               {/* MDX Content */}
               <ErrorBoundary
@@ -224,7 +223,7 @@ export default function BlogPost({ params }) {
                       'AG'
                     )}
                   </div>
-                  <div>
+                  <div className="ml-4">
                     <h4 className="text-lg font-medium text-gray-900 dark:text-white">{postMeta.author}</h4>
                     <p className="text-gray-600 dark:text-gray-300">
                       Advanced Analytics Engineer with expertise in data engineering, machine learning, and AI integration.
@@ -247,10 +246,10 @@ export default function BlogPost({ params }) {
                         className="group"
                       >
                         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden h-full flex flex-col transition-transform transform group-hover:scale-[1.02]">
-                          {relatedPost.coverImage && (
+                          {relatedPost.image && (
                             <div className="h-40 overflow-hidden">
                               <Image 
-                                src={relatedPost.coverImage} 
+                                src={relatedPost.image} 
                                 alt={relatedPost.title} 
                                 width={400} 
                                 height={225}
