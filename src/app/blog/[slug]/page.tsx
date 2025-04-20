@@ -14,7 +14,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { getPostBySlug, getRelatedPosts, getAllPostsMeta } from '@/lib/blog-api';
 
 // Fallback component for error boundary
-function ErrorFallback({ error, resetErrorBoundary }) {
+function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
     <div className="p-6 bg-red-50 dark:bg-red-900/20 rounded-lg my-8 text-center">
       <h2 className="text-xl font-bold text-red-700 dark:text-red-400 mb-4">
@@ -31,8 +31,14 @@ function ErrorFallback({ error, resetErrorBoundary }) {
   );
 }
 
+interface Heading {
+  id: string;
+  text: string;
+  level: number;
+}
+
 // Table of Contents component
-function TableOfContents({ headings, activeId, onClick }) {
+function TableOfContents({ headings, activeId, onClick }: { headings: Heading[]; activeId: string; onClick: (id: string) => void }) {
   return (
     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-5 sticky top-24">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Table of Contents</h3>
@@ -62,9 +68,19 @@ function TableOfContents({ headings, activeId, onClick }) {
   );
 }
 
+interface Comment {
+  id: number;
+  author: string;
+  authorImage: string | null;
+  date: string;
+  content: string;
+  likes: number;
+  replies?: Comment[];
+}
+
 // Comment component
-function CommentSystem({ postSlug }) {
-  const [comments, setComments] = useState([
+function CommentSystem({ postSlug }: { postSlug: string }) {
+  const [comments, setComments] = useState<Comment[]>([
     {
       id: 1,
       author: 'Jane Smith',
@@ -100,7 +116,7 @@ function CommentSystem({ postSlug }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   
-  const handleSubmitComment = (e) => {
+  const handleSubmitComment = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate form
@@ -124,7 +140,7 @@ function CommentSystem({ postSlug }) {
     setFormError('');
     
     setTimeout(() => {
-      const newCommentObj = {
+      const newCommentObj: Comment = {
         id: comments.length + 1,
         author: name,
         authorImage: null,
@@ -142,7 +158,7 @@ function CommentSystem({ postSlug }) {
     }, 1000);
   };
   
-  const handleLike = (commentId) => {
+  const handleLike = (commentId: number) => {
     setComments(comments.map(comment => {
       if (comment.id === commentId) {
         return { ...comment, likes: comment.likes + 1 };
@@ -327,8 +343,24 @@ function CommentSystem({ postSlug }) {
   );
 }
 
+interface SocialLinks {
+  twitter?: string;
+  linkedin?: string;
+  github?: string;
+}
+
 // Enhanced Author Profile component
-function EnhancedAuthorProfile({ author, authorImage, bio, socialLinks }) {
+function EnhancedAuthorProfile({ 
+  author, 
+  authorImage, 
+  bio, 
+  socialLinks 
+}: { 
+  author: string; 
+  authorImage?: string; 
+  bio?: string; 
+  socialLinks?: SocialLinks 
+}) {
   return (
     <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
@@ -397,7 +429,7 @@ function EnhancedAuthorProfile({ author, authorImage, bio, socialLinks }) {
 }
 
 // Social Sharing component
-function SocialSharing({ title, url }) {
+function SocialSharing({ title, url }: { title: string; url: string }) {
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}${url}` : url;
   
   const shareLinks = {
@@ -460,21 +492,23 @@ function SocialSharing({ title, url }) {
 // Custom MDX components with copy button for code blocks
 const CustomMDXComponents = {
   ...MDXComponents,
-  pre: ({ children, ...props }) => {
+  pre: ({ children, ...props }: React.HTMLProps<HTMLPreElement>) => {
     const [copied, setCopied] = useState(false);
-    const preRef = useRef(null);
+    const preRef = useRef<HTMLPreElement>(null);
     
     const handleCopy = () => {
       if (preRef.current) {
         const code = preRef.current.textContent;
-        navigator.clipboard.writeText(code)
-          .then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-          })
-          .catch(err => {
-            console.error('Failed to copy code: ', err);
-          });
+        if (code) {
+          navigator.clipboard.writeText(code)
+            .then(() => {
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            })
+            .catch(err => {
+              console.error('Failed to copy code: ', err);
+            });
+        }
       }
     };
     
@@ -495,37 +529,57 @@ const CustomMDXComponents = {
   }
 };
 
-export default function BlogPost({ params }) {
+interface BlogPost {
+  slug: string;
+  title: string;
+  date: string;
+  author: string;
+  category: string;
+  readingTime?: string;
+  image?: string;
+  excerpt?: string;
+  featured?: boolean;
+  tags?: string[];
+  content?: string;
+  authorImage?: string;
+  authorBio?: string;
+}
+
+export default function BlogPost({ params }: { params: { slug: string } }) {
   const { slug } = params;
-  const [postMeta, setPostMeta] = useState(null);
-  const [mdxSource, setMdxSource] = useState(null);
-  const [relatedPosts, setRelatedPosts] = useState([]);
-  const [prevPost, setPrevPost] = useState(null);
-  const [nextPost, setNextPost] = useState(null);
+  const [postMeta, setPostMeta] = useState<BlogPost | null>(null);
+  const [mdxSource, setMdxSource] = useState<any>(null);
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+  const [prevPost, setPrevPost] = useState<BlogPost | null>(null);
+  const [nextPost, setNextPost] = useState<BlogPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [headings, setHeadings] = useState([]);
+  const [error, setError] = useState<string | null>(null);
+  const [headings, setHeadings] = useState<Heading[]>([]);
   const [activeHeading, setActiveHeading] = useState('');
   const [readingProgress, setReadingProgress] = useState(0);
-  const contentRef = useRef(null);
-  const headingRefs = useRef({});
+  const contentRef = useRef<HTMLDivElement>(null);
+  const headingRefs = useRef<Record<string, HTMLHeadingElement>>({});
   
   // Extract headings from content
   useEffect(() => {
     if (contentRef.current) {
       const headingElements = contentRef.current.querySelectorAll('h2, h3, h4');
-      const extractedHeadings = Array.from(headingElements).map(heading => ({
-        id: heading.id || heading.textContent.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
-        text: heading.textContent,
-        level: parseInt(heading.tagName.substring(1))
-      }));
+      const extractedHeadings: Heading[] = Array.from(headingElements).map(heading => {
+        const element = heading as HTMLHeadingElement;
+        return {
+          id: element.id || element.textContent?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') || '',
+          text: element.textContent || '',
+          level: parseInt(element.tagName.substring(1))
+        };
+      });
       
       // Set IDs for headings that don't have them
       headingElements.forEach((heading, index) => {
-        if (!heading.id) {
-          heading.id = extractedHeadings[index].id;
+        const element = heading as HTMLHeadingElement;
+        if (!element.id) {
+          element.id = extractedHeadings[index].id;
         }
-        headingRefs.current[heading.id] = heading;
+        headingRefs.current[element.id] = element;
       });
       
       setHeadings(extractedHeadings);
@@ -533,7 +587,7 @@ export default function BlogPost({ params }) {
   }, [mdxSource, isLoading]);
   
   // Scroll to heading
-  const scrollToHeading = (id) => {
+  const scrollToHeading = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
       const offset = 100; // Offset for fixed header
@@ -626,7 +680,7 @@ export default function BlogPost({ params }) {
         }
       } catch (err) {
         console.error('Error fetching blog post:', err);
-        setError(err.message);
+        setError((err as Error).message);
       } finally {
         setIsLoading(false);
       }
