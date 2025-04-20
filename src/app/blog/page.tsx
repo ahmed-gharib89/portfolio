@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
-import { useState, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, Calendar, Clock, Search, SortAsc, SortDesc, Star } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, Search, SortAsc, SortDesc, Star, Share2, Tag, Filter } from 'lucide-react';
 import { getAllPostSlugs, getPostBySlug } from '@/lib/blog-api';
 
 // Image shimmer placeholder
@@ -41,6 +41,19 @@ const getCategoryColor = (category: string) => {
   return categoryColors[category] || 'from-gray-500 to-gray-700';
 };
 
+// Function to get category badge color
+const getCategoryBadgeColor = (category: string) => {
+  const categoryColors: Record<string, string> = {
+    'Data Engineering': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    'AI & Data Engineering': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+    'Data Architecture': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+    'Data Governance': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+    'AI & Large Action Models': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+  };
+  
+  return categoryColors[category] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+};
+
 interface BlogPost {
   slug: string;
   title: string;
@@ -51,6 +64,7 @@ interface BlogPost {
   image?: string;
   excerpt?: string;
   featured?: boolean;
+  tags?: string[];
 }
 
 export default function Blog() {
@@ -61,7 +75,35 @@ export default function Blog() {
   const [featuredPosts, setFeaturedPosts] = useState<BlogPost[]>([]);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [sortField, setSortField] = useState<'date' | 'title'>('date');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showCategoryFilter, setShowCategoryFilter] = useState(false);
+  const [showTagFilter, setShowTagFilter] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
   const postsPerPage = 6;
+  
+  // Extract all categories and tags
+  const categories = useMemo(() => {
+    const categorySet = new Set<string>();
+    blogPosts.forEach(post => {
+      if (post.category) {
+        categorySet.add(post.category);
+      }
+    });
+    return Array.from(categorySet);
+  }, [blogPosts]);
+  
+  const tags = useMemo(() => {
+    const tagSet = new Set<string>();
+    blogPosts.forEach(post => {
+      if (post.tags) {
+        post.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet);
+  }, [blogPosts]);
   
   // Fetch blog posts
   useEffect(() => {
@@ -86,7 +128,8 @@ export default function Blog() {
             readingTime: post.readingTime || '5 min',
             image: post.image || '/assets/images/default-blog.jpg',
             excerpt: post.excerpt || 'Read this article to learn more about the latest developments in data engineering and AI.',
-            featured: post.featured || false
+            featured: post.featured || false,
+            tags: post.tags || generateRandomTags(post.category)
           };
         });
         
@@ -108,6 +151,32 @@ export default function Blog() {
     fetchBlogPosts();
   }, []);
   
+  // Generate random tags for posts that don't have them
+  const generateRandomTags = (category: string): string[] => {
+    const tagsByCategory: Record<string, string[]> = {
+      'Data Engineering': ['ETL', 'Data Pipeline', 'Data Modeling', 'SQL', 'Python'],
+      'AI & Data Engineering': ['Machine Learning', 'NLP', 'Deep Learning', 'Neural Networks', 'TensorFlow'],
+      'Data Architecture': ['Data Warehouse', 'Data Lake', 'Cloud Architecture', 'Microservices', 'Serverless'],
+      'Data Governance': ['Data Quality', 'Data Security', 'Compliance', 'GDPR', 'Data Privacy'],
+      'AI & Large Action Models': ['GPT', 'LLM', 'Transformers', 'Reinforcement Learning', 'AI Ethics']
+    };
+    
+    const defaultTags = ['Data', 'Analytics', 'Big Data', 'Cloud'];
+    const categoryTags = tagsByCategory[category] || defaultTags;
+    
+    // Select 2-4 random tags
+    const numTags = Math.floor(Math.random() * 3) + 2; // 2 to 4 tags
+    const selectedTags: string[] = [];
+    
+    while (selectedTags.length < numTags && categoryTags.length > 0) {
+      const randomIndex = Math.floor(Math.random() * categoryTags.length);
+      selectedTags.push(categoryTags[randomIndex]);
+      categoryTags.splice(randomIndex, 1);
+    }
+    
+    return selectedTags;
+  };
+  
   // Sort posts
   const sortPosts = (posts: BlogPost[]) => {
     return [...posts].sort((a, b) => {
@@ -123,12 +192,25 @@ export default function Blog() {
     });
   };
   
-  // Filter posts based on search term
-  const filteredPosts = sortPosts(blogPosts.filter(post => 
-    post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    post.excerpt?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    post.category.toLowerCase().includes(searchTerm.toLowerCase())
-  ));
+  // Filter posts based on search term, category, and tags
+  const filteredPosts = useMemo(() => {
+    return sortPosts(blogPosts.filter(post => {
+      // Search term filter
+      const matchesSearch = 
+        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.excerpt?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.category.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Category filter
+      const matchesCategory = !selectedCategory || post.category === selectedCategory;
+      
+      // Tags filter
+      const matchesTags = selectedTags.length === 0 || 
+        (post.tags && selectedTags.every(tag => post.tags!.includes(tag)));
+      
+      return matchesSearch && matchesCategory && matchesTags;
+    }));
+  }, [blogPosts, searchTerm, selectedCategory, selectedTags, sortField, sortOrder]);
   
   // Calculate pagination
   const indexOfLastPost = currentPage * postsPerPage;
@@ -164,6 +246,81 @@ export default function Blog() {
     setSortField(field);
   };
   
+  // Handle category selection
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category === selectedCategory ? '' : category);
+    setCurrentPage(1);
+  };
+  
+  // Handle tag selection
+  const handleTagSelect = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag) 
+        : [...prev, tag]
+    );
+    setCurrentPage(1);
+  };
+  
+  // Handle newsletter subscription
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Simple email validation
+    if (!email) {
+      setEmailError('Email is required');
+      return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+    
+    // Simulate subscription
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsSubscribed(true);
+      setIsLoading(false);
+    }, 1000);
+  };
+  
+  // Share post
+  const sharePost = (post: BlogPost) => {
+    if (navigator.share) {
+      navigator.share({
+        title: post.title,
+        text: post.excerpt,
+        url: `${window.location.origin}/blog/${post.slug}`
+      })
+      .catch(error => console.log('Error sharing', error));
+    } else {
+      // Fallback for browsers that don't support navigator.share
+      const url = `${window.location.origin}/blog/${post.slug}`;
+      navigator.clipboard.writeText(url)
+        .then(() => {
+          alert('Link copied to clipboard!');
+        })
+        .catch(err => {
+          console.error('Failed to copy link: ', err);
+        });
+    }
+  };
+  
+  // Featured posts carousel
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  useEffect(() => {
+    if (featuredPosts.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % featuredPosts.length);
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [featuredPosts.length]);
+  
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <Header />
@@ -178,8 +335,148 @@ export default function Blog() {
               Insights, tutorials, and perspectives on data engineering, AI, and modern analytics.
             </p>
             
+            {/* Featured Posts Carousel */}
+            {featuredPosts.length > 0 && !searchTerm && currentPage === 1 && !selectedCategory && selectedTags.length === 0 && (
+              <div className="mb-16 relative overflow-hidden rounded-xl shadow-lg">
+                <div 
+                  className="flex transition-transform duration-500 ease-in-out" 
+                  style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                >
+                  {featuredPosts.map((post, index) => (
+                    <div key={post.slug} className="w-full flex-shrink-0">
+                      <div className="relative h-96 w-full">
+                        <Image 
+                          src={post.image || '/assets/images/default-blog.jpg'}
+                          alt={post.title}
+                          fill
+                          sizes="100vw"
+                          className="object-cover"
+                          priority={index === 0}
+                          placeholder="blur"
+                          blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(1200, 600))}`}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+                          <div className="flex items-center mb-4">
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryBadgeColor(post.category)}`}>
+                              {post.category}
+                            </span>
+                            <Star className="h-5 w-5 text-yellow-400 ml-3" />
+                            <span className="text-white text-sm ml-1">Featured</span>
+                          </div>
+                          <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                            {post.title}
+                          </h2>
+                          <p className="text-gray-200 mb-4 max-w-3xl line-clamp-2 md:line-clamp-3">
+                            {post.excerpt}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center text-gray-300 text-sm">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              <span className="mr-4">{post.date}</span>
+                              <Clock className="h-4 w-4 mr-1" />
+                              <span>{post.readingTime}</span>
+                            </div>
+                            <Link 
+                              href={`/blog/${post.slug}`}
+                              className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                            >
+                              Read Article
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Carousel Controls */}
+                {featuredPosts.length > 1 && (
+                  <>
+                    <button 
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+                      onClick={() => setCurrentSlide(prev => (prev - 1 + featuredPosts.length) % featuredPosts.length)}
+                      aria-label="Previous slide"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </button>
+                    <button 
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+                      onClick={() => setCurrentSlide(prev => (prev + 1) % featuredPosts.length)}
+                      aria-label="Next slide"
+                    >
+                      <ArrowRight className="h-5 w-5" />
+                    </button>
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                      {featuredPosts.map((_, index) => (
+                        <button
+                          key={index}
+                          className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                            currentSlide === index ? 'bg-white' : 'bg-white/50 hover:bg-white/70'
+                          }`}
+                          onClick={() => setCurrentSlide(index)}
+                          aria-label={`Go to slide ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+            
+            {/* Newsletter Subscription */}
+            <div className="max-w-4xl mx-auto mb-16 bg-blue-50 dark:bg-gray-800 rounded-xl p-6 md:p-8 shadow-md">
+              <div className="flex flex-col md:flex-row items-center">
+                <div className="mb-6 md:mb-0 md:mr-8 md:w-1/2">
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                    Subscribe to our Newsletter
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    Get the latest articles, tutorials, and updates delivered straight to your inbox.
+                  </p>
+                </div>
+                
+                <div className="w-full md:w-1/2">
+                  {isSubscribed ? (
+                    <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-lg text-center">
+                      <p className="text-green-700 dark:text-green-300 font-medium">
+                        Thank you for subscribing! You'll receive our next newsletter soon.
+                      </p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubscribe} className="space-y-3">
+                      <div>
+                        <input
+                          type="email"
+                          placeholder="Your email address"
+                          value={email}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            setEmailError('');
+                          }}
+                          className={`w-full px-4 py-3 rounded-md border ${
+                            emailError ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-700'
+                          } focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white`}
+                        />
+                        {emailError && (
+                          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{emailError}</p>
+                        )}
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        {isLoading ? 'Subscribing...' : 'Subscribe'}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              </div>
+            </div>
+            
             {/* Search and Sort Controls */}
-            <div className="max-w-4xl mx-auto mb-16">
+            <div className="max-w-4xl mx-auto mb-8">
               <div className="flex flex-col md:flex-row gap-4">
                 <form onSubmit={handleSearch} className="flex items-center flex-grow">
                   <div className="relative flex-grow">
@@ -234,66 +531,136 @@ export default function Blog() {
               </div>
             </div>
             
-            {/* Featured Posts */}
-            {featuredPosts.length > 0 && !searchTerm && currentPage === 1 && (
-              <div className="mb-16">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-                  <Star className="h-5 w-5 text-yellow-500 mr-2" />
-                  Featured Articles
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {featuredPosts.map((post) => (
-                    <Link href={`/blog/${post.slug}`} key={post.slug} className="group">
-                      <div className="h-full bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 group-hover:shadow-lg border-2 border-yellow-400 dark:border-yellow-600 flex flex-col">
-                        <div className="h-48 relative">
-                          <Image 
-                            src={post.image || '/assets/images/default-blog.jpg'}
-                            alt={post.title}
-                            fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            className="object-cover"
-                            placeholder="blur"
-                            blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(700, 475))}`}
-                          />
-                          <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryColor(post.category)} opacity-60 group-hover:opacity-70 transition-opacity`}></div>
-                          <div className="absolute top-2 right-2 bg-yellow-400 text-gray-900 rounded-full p-1">
-                            <Star className="h-4 w-4" />
-                          </div>
-                          <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                            <div className="text-xs font-semibold mb-1">
-                              {post.category}
-                            </div>
-                            <h3 className="text-lg font-bold line-clamp-2">
-                              {post.title}
-                            </h3>
-                          </div>
-                        </div>
-                        <div className="p-4 flex-grow flex flex-col">
-                          <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 flex-grow">
-                            {post.excerpt}
-                          </p>
-                          <div className="flex items-center justify-between mt-auto">
-                            <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                              <Calendar className="h-3 w-3 mr-1" />
-                              {post.date}
-                            </span>
-                            <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                              <Clock className="h-3 w-3 mr-1" />
-                              {post.readingTime}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+            {/* Filters */}
+            <div className="max-w-4xl mx-auto mb-8">
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <button
+                  onClick={() => setShowCategoryFilter(!showCategoryFilter)}
+                  className={`flex items-center px-4 py-2 rounded-md border ${
+                    selectedCategory 
+                      ? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-900/30 dark:text-blue-300' 
+                      : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  {selectedCategory || 'Filter by Category'}
+                  <span className="ml-2 text-xs">
+                    {showCategoryFilter ? '▲' : '▼'}
+                  </span>
+                </button>
+                
+                <button
+                  onClick={() => setShowTagFilter(!showTagFilter)}
+                  className={`flex items-center px-4 py-2 rounded-md border ${
+                    selectedTags.length > 0
+                      ? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-900/30 dark:text-blue-300' 
+                      : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  <Tag className="h-4 w-4 mr-2" />
+                  {selectedTags.length > 0 ? `${selectedTags.length} Tags Selected` : 'Filter by Tags'}
+                  <span className="ml-2 text-xs">
+                    {showTagFilter ? '▲' : '▼'}
+                  </span>
+                </button>
+                
+                {(selectedCategory || selectedTags.length > 0) && (
+                  <button
+                    onClick={() => {
+                      setSelectedCategory('');
+                      setSelectedTags([]);
+                    }}
+                    className="px-3 py-1 text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                  >
+                    Clear Filters
+                  </button>
+                )}
               </div>
-            )}
+              
+              {/* Category Filter */}
+              {showCategoryFilter && (
+                <div className="bg-white dark:bg-gray-800 rounded-md shadow-md p-4 mb-4 border border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Categories</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map(category => (
+                      <button
+                        key={category}
+                        onClick={() => handleCategorySelect(category)}
+                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                          selectedCategory === category
+                            ? getCategoryBadgeColor(category)
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Tags Filter */}
+              {showTagFilter && (
+                <div className="bg-white dark:bg-gray-800 rounded-md shadow-md p-4 mb-4 border border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Tags</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map(tag => (
+                      <button
+                        key={tag}
+                        onClick={() => handleTagSelect(tag)}
+                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                          selectedTags.includes(tag)
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Tag Cloud */}
+            <div className="max-w-4xl mx-auto mb-12">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                <Tag className="h-4 w-4 mr-2" />
+                Popular Tags
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {tags.slice(0, 15).map(tag => {
+                  // Calculate tag size based on frequency
+                  const tagFrequency = blogPosts.filter(post => post.tags?.includes(tag)).length;
+                  const tagSize = Math.max(0.8, Math.min(1.5, 0.8 + tagFrequency / 10));
+                  
+                  return (
+                    <button
+                      key={tag}
+                      onClick={() => handleTagSelect(tag)}
+                      className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                        selectedTags.includes(tag)
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                      style={{ fontSize: `${tagSize}rem` }}
+                    >
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             
             {/* All Blog Posts */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                {searchTerm ? 'Search Results' : 'All Articles'}
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center justify-between">
+                <span>
+                  {searchTerm ? 'Search Results' : selectedCategory ? `Category: ${selectedCategory}` : selectedTags.length > 0 ? 'Filtered Articles' : 'All Articles'}
+                </span>
+                <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                  {filteredPosts.length} {filteredPosts.length === 1 ? 'article' : 'articles'}
+                </span>
               </h2>
               
               {isLoading ? (
@@ -304,55 +671,94 @@ export default function Blog() {
                 <div className="text-center py-12">
                   <p className="text-xl text-gray-600 dark:text-gray-400">No articles found matching your search.</p>
                   <button
-                    onClick={() => setSearchTerm('')}
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSelectedCategory('');
+                      setSelectedTags([]);
+                    }}
                     className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
                   >
-                    Clear Search
+                    Clear Filters
                   </button>
                 </div>
               ) : (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {currentPosts.map((post) => (
-                      <Link href={`/blog/${post.slug}`} key={post.slug} className="group">
-                        <div className="h-full bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 group-hover:shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col">
-                          <div className="h-48 relative">
-                            <Image 
-                              src={post.image || '/assets/images/default-blog.jpg'}
-                              alt={post.title}
-                              fill
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                              className="object-cover"
-                              placeholder="blur"
-                              blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(700, 475))}`}
-                            />
-                            <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryColor(post.category)} opacity-60 group-hover:opacity-70 transition-opacity`}></div>
-                            <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                              <div className="text-xs font-semibold mb-1">
-                                {post.category}
+                      <div key={post.slug} className="group relative">
+                        <Link href={`/blog/${post.slug}`} className="block">
+                          <div className="h-full bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 group-hover:shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col">
+                            <div className="h-48 relative">
+                              <Image 
+                                src={post.image || '/assets/images/default-blog.jpg'}
+                                alt={post.title}
+                                fill
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                className="object-cover"
+                                placeholder="blur"
+                                blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(700, 475))}`}
+                              />
+                              <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryColor(post.category)} opacity-60 group-hover:opacity-70 transition-opacity`}></div>
+                              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                                <div className="text-xs font-semibold mb-1">
+                                  {post.category}
+                                </div>
+                                <h3 className="text-lg font-bold line-clamp-2">
+                                  {post.title}
+                                </h3>
                               </div>
-                              <h3 className="text-lg font-bold line-clamp-2">
-                                {post.title}
-                              </h3>
+                            </div>
+                            <div className="p-4 flex-grow flex flex-col">
+                              <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 flex-grow">
+                                {post.excerpt}
+                              </p>
+                              <div className="flex items-center justify-between mt-auto">
+                                <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                                  <Calendar className="h-3 w-3 mr-1" />
+                                  {post.date}
+                                </span>
+                                <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                                  <Clock className="h-3 w-3 mr-1" />
+                                  {post.readingTime}
+                                </span>
+                              </div>
+                              {post.tags && post.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-3">
+                                  {post.tags.slice(0, 3).map(tag => (
+                                    <span 
+                                      key={tag} 
+                                      className="inline-block px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded text-xs"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        handleTagSelect(tag);
+                                      }}
+                                    >
+                                      {tag}
+                                    </span>
+                                  ))}
+                                  {post.tags.length > 3 && (
+                                    <span className="inline-block px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded text-xs">
+                                      +{post.tags.length - 3}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
-                          <div className="p-4 flex-grow flex flex-col">
-                            <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 flex-grow">
-                              {post.excerpt}
-                            </p>
-                            <div className="flex items-center justify-between mt-auto">
-                              <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                                <Calendar className="h-3 w-3 mr-1" />
-                                {post.date}
-                              </span>
-                              <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                                <Clock className="h-3 w-3 mr-1" />
-                                {post.readingTime}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
+                        </Link>
+                        
+                        {/* Share Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            sharePost(post);
+                          }}
+                          className="absolute top-2 right-2 p-2 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-md hover:bg-white dark:hover:bg-gray-700 transition-colors"
+                          aria-label="Share article"
+                        >
+                          <Share2 className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                        </button>
+                      </div>
                     ))}
                   </div>
                   
