@@ -535,12 +535,12 @@ interface BlogPost {
   date: string;
   author: string;
   category: string;
-  readingTime?: string;
+  tags?: string[];
   image?: string;
   excerpt?: string;
-  featured?: boolean;
-  tags?: string[];
   content?: string;
+  readingTime?: string;
+  featured?: boolean;
   authorImage?: string;
   authorBio?: string;
 }
@@ -664,7 +664,7 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
         }
         
         // Set related posts
-        const relatedPostsData = getRelatedPosts(slug, 3);
+        const relatedPostsData = await getRelatedPosts(slug, 3);
         setRelatedPosts(relatedPostsData);
         
         // Set previous and next posts
