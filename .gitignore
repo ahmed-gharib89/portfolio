@@ -39,3 +39,7 @@ next-env.d.ts
 
 run.sh
 server-setup.sh
+test-deploy/
+deploy-package/
+portfolio-build.tar.gz
+test-deployment.sh

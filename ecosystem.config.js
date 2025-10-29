@@ -1,8 +1,7 @@
 module.exports = {
   apps: [{
     name: 'portfolio',
-    script: 'server.js',
-    cwd: '.next/standalone',
+    script: './server.js',
     instances: 1,
     exec_mode: 'cluster',
     env: {
