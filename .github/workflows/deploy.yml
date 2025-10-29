@@ -39,7 +39,7 @@ jobs:
           tar -czf portfolio-build.tar.gz -C deploy-package .
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: portfolio-build
           path: portfolio-build.tar.gz
