@@ -44,10 +44,10 @@ const HeroSection = () => {
               Ahmed Gharib
             </h1>
             <h2 className="text-2xl md:text-3xl text-blue-600 dark:text-blue-400 font-medium">
-              Senior Data Engineer at Raisa Energy
+              Principal Advanced Analytics Engineer at ITWorx
             </h2>
             <p className="text-lg text-gray-700 dark:text-gray-300 max-w-2xl">
-              Senior Data Engineer with over 6 years of expertise in designing and implementing scalable data solutions across Microsoft Azure, AWS, and Google Cloud platforms. Currently building data infrastructure and analytics solutions at Raisa Energy since March 2025.
+              Data engineering leader with 8+ years building scalable pipelines, warehouses, and analytics solutions across Azure, Snowflake, AWS, and Databricks. Currently architecting data infrastructure for enterprise clients at ITWorx, with a strong focus on Agentic AI and autonomous data pipelines.
             </p>
             
             <div className="flex flex-wrap gap-4 pt-4">
@@ -141,16 +141,18 @@ const HeroSection = () => {
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Core Skills</h3>
           <div className="flex flex-wrap gap-3">
             {[
-              'Data Integration', 
-              'Data Pipeline Development', 
-              'Data Modeling', 
-              'ETL Processes', 
-              'Python', 
-              'SQL', 
-              'Power BI', 
-              'Azure', 
-              'AWS', 
-              'Machine Learning'
+              'Data Engineering',
+              'Snowflake',
+              'Azure',
+              'DBT',
+              'Python',
+              'SQL',
+              'Power BI',
+              'Agentic AI',
+              'N8N',
+              'LangChain',
+              'Docker',
+              'asyncio'
             ].map((skill, index) => (
               <span 
                 key={index} 

@@ -273,10 +273,10 @@ const AboutSection = () => {
                 Professional Summary
               </h3>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                Experienced Data Engineer with over 6 years of expertise in designing and implementing scalable data solutions across Microsoft Azure, AWS, and Google Cloud platforms. Skilled in building robust data pipelines and ETL processes using SSIS, Azure Data Factory, and Python, as well as optimizing databases like Azure SQL, PostgreSQL, MongoDB, and SQL Server to enhance performance and ensure seamless data management. Proficient in developing interactive dashboards and advanced reports using Power BI, SSRS, and Paginated Reports, enabling real-time insights and data-driven decision-making.
+                Data engineering leader with 8+ years building scalable pipelines, warehouses, and analytics solutions across Azure, Snowflake, AWS, GCP, and Databricks. Currently at ITWorx as Principal Advanced Analytics Engineer, leading analytics initiatives for enterprise clients in financial services and healthcare — including architecting the data infrastructure for Abu Dhabi Securities Exchange&apos;s digital transformation and building an Agentic AI-powered competitor intelligence system.
               </p>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed mt-4">
-                Leveraged advanced frameworks like PySpark, Delta Lake, TensorFlow, and PyTorch to create end-to-end data architectures, automate workflows, and enhance predictive analytics. Known for collaborating with cross-functional teams to standardize workflows, improve data governance, and drive operational excellence through innovative and scalable data solutions.
+                Hands-on experience leading teams, migrating to Medallion architecture (Snowflake + DBT), and building async ETL pipelines with 68x performance gains. Advanced practitioner of AI coding tools (Claude Code, GitHub Copilot) with multiple training sessions delivered at ITWorx and Raisa Energy. Combines data engineering depth with AI/ML skills (TensorFlow, PyTorch, Scikit-learn) and a strong focus on Agentic AI and autonomous data pipelines.
               </p>
             </div>
             
