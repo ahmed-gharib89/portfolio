@@ -12,7 +12,7 @@ const ExperienceSection = () => {
         'Architected data infrastructure for Abu Dhabi Securities Exchange (ADX) digital transformation, optimizing Azure SQL and Synapse data warehouse for trading platform performance.',
         'Built Agentic AI-powered competitor intelligence system using N8N, Azure OpenAI GPT, LangChain, star-schema Azure SQL, Docker Compose, Playwright, and FlareSolverr.',
         'Standardized 190+ Power BI Paginated Reports across 4 environments (Dev, Test, UAT, Prod) with a custom Python CLI tool, reducing processing time from 4 hours to 15 minutes.',
-        'Delivered multiple training sessions on AI coding assistants (Claude Code, GitHub Copilot) to engineering teams, driving adoption of AI-augmented development workflows.',
+        'Instructor for AIWorx, ITWorx\'s company-wide AI enablement initiative, training 150+ developers to build with AI coding agents (Claude Code, GitHub Copilot) and Agentic AI workflows.',
         'Led presales activities and POCs in Agentic AI, data engineering, and analytics for enterprise clients in financial services and healthcare.'
       ]
     },

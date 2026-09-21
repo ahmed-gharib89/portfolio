@@ -6,6 +6,21 @@ import Link from 'next/link';
 const ProjectsSection = () => {
   const projects = [
     {
+      title: 'crm — Dynamics 365 CE Automation CLI',
+      period: 'May 2026 - Present (Open Source)',
+      description: 'Open-source Python CLI that operates Microsoft Dynamics 365 CE / Dataverse — on-premises (NTLM) and cloud (OAuth) — entirely from the shell, designed from the ground up as a surface for AI agents.',
+      achievements: [
+        'Covers 30 command groups spanning record CRUD, OData/FetchXML queries, metadata, solution lifecycle, forms, dashboards, security, and plug-in registration',
+        'Built a "customizations as code" workflow: declarative YAML desired-state with reviewable plan artifacts and dry-run previews, replacing manual GUI customization',
+        'Engineered as an AI-agent surface with stable JSON envelopes, an on-demand agent skill, and a published llms.txt',
+        '56K lines of source covered by 5,200+ automated tests, shipped across 160+ releases with a 175-page documentation site'
+      ],
+      technologies: ['Python', 'Click', 'Dataverse Web API (OData v4)', 'FetchXML', 'pytest', 'Docker', 'MkDocs Material', 'GitHub Actions'],
+      tools: ['Visual Studio Code', 'Docker', 'GitHub Actions', 'MkDocs'],
+      docsUrl: 'https://crm-cli-docs.pages.dev/',
+      repoUrl: 'https://github.com/Gharib89/crm'
+    },
+    {
       title: 'Competitor AI Insight — Agentic AI System',
       period: 'Jan 2025 - Present',
       description: 'Agentic AI-powered competitor intelligence system that autonomously scrapes, processes, and analyzes market data to generate actionable business insights.',
@@ -90,18 +105,28 @@ const ProjectsSection = () => {
                     {project.title}
                   </h3>
                   <div className="flex space-x-2">
-                    <Link 
-                      href="#" 
-                      className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                    >
-                      <ExternalLink className="h-5 w-5" />
-                    </Link>
-                    <Link 
-                      href="#" 
-                      className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                    >
-                      <Github className="h-5 w-5" />
-                    </Link>
+                    {project.docsUrl && (
+                      <Link 
+                        href={project.docsUrl} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${project.title} documentation`}
+                        className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+                      >
+                        <ExternalLink className="h-5 w-5" />
+                      </Link>
+                    )}
+                    {project.repoUrl && (
+                      <Link 
+                        href={project.repoUrl} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${project.title} source code`}
+                        className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+                      >
+                        <Github className="h-5 w-5" />
+                      </Link>
+                    )}
                   </div>
                 </div>
                 
