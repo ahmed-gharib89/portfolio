@@ -273,10 +273,10 @@ const AboutSection = () => {
                 Professional Summary
               </h3>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                Data engineering leader with 8+ years building scalable pipelines, warehouses, and analytics solutions across Azure, Snowflake, AWS, GCP, and Databricks. Currently at ITWorx as Principal Advanced Analytics Engineer, leading analytics initiatives for enterprise clients in financial services and healthcare — including architecting the data infrastructure for Abu Dhabi Securities Exchange&apos;s digital transformation and building an Agentic AI-powered competitor intelligence system.
+                Data engineering leader with 11+ years building scalable pipelines, warehouses, and analytics solutions across Azure, Snowflake, AWS, GCP, and Databricks. Currently at ITWorx as Principal Advanced Analytics Engineer, leading analytics initiatives for enterprise clients in financial services and healthcare — including architecting the data infrastructure for Abu Dhabi Securities Exchange&apos;s digital transformation and building an Agentic AI-powered competitor intelligence system.
               </p>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed mt-4">
-                Hands-on experience leading teams, migrating to Medallion architecture (Snowflake + DBT), and building async ETL pipelines with 68x performance gains. Advanced practitioner of AI coding tools (Claude Code, GitHub Copilot) with multiple training sessions delivered at ITWorx and Raisa Energy. Combines data engineering depth with AI/ML skills (TensorFlow, PyTorch, Scikit-learn) and a strong focus on Agentic AI and autonomous data pipelines.
+                Hands-on experience leading teams, migrating to Medallion architecture (Snowflake + DBT), and building async ETL pipelines with 68x performance gains. Advanced practitioner of AI coding tools (Claude Code, GitHub Copilot) and an instructor for AIWorx, ITWorx&apos;s company-wide AI enablement initiative, training 150+ developers to build with AI coding agents. Author of crm, an open-source Dynamics 365 automation CLI designed as an AI-agent surface. Combines data engineering depth with AI/ML skills (TensorFlow, PyTorch, Scikit-learn) and a strong focus on Agentic AI and autonomous data pipelines.
               </p>
             </div>
             

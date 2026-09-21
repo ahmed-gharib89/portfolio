@@ -44,10 +44,10 @@ const HeroSection = () => {
               Ahmed Gharib
             </h1>
             <h2 className="text-2xl md:text-3xl text-blue-600 dark:text-blue-400 font-medium">
-              Principal Advanced Analytics Engineer at ITWorx
+              Principal Data & AI Engineer at ITWorx
             </h2>
             <p className="text-lg text-gray-700 dark:text-gray-300 max-w-2xl">
-              Data engineering leader with 8+ years building scalable pipelines, warehouses, and analytics solutions across Azure, Snowflake, AWS, and Databricks. Currently architecting data infrastructure for enterprise clients at ITWorx, with a strong focus on Agentic AI and autonomous data pipelines.
+              Data engineering leader with 11+ years building scalable pipelines, warehouses, and analytics solutions across Azure, Snowflake, AWS, and Databricks. Currently architecting data infrastructure for enterprise clients at ITWorx, with a strong focus on Agentic AI and autonomous data pipelines.
             </p>
             
             <div className="flex flex-wrap gap-4 pt-4">
