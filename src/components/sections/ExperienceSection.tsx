@@ -24,8 +24,7 @@ const ExperienceSection = () => {
         'Led a team of 4 engineers, migrating legacy multi-layer architecture to a proper Medallion architecture (Bronze/Silver/Gold) using Snowflake and DBT.',
         'Developed an Entity Correction Model using DBT with exact and fuzzy matching, improving financial attribution accuracy from ~70% to ~98%.',
         'Built WEnergyDocsEL — an async Python ETL pipeline (asyncio) for document processing, achieving a 68x performance improvement over the synchronous version.',
-        'Delivered training sessions on AI tools and coding assistants to the engineering team.',
-        'Implemented data governance strategies ensuring data quality, security, and compliance across all data assets.'
+        'Implemented security-first design with Azure Key Vault integration, a custom exception hierarchy (15+ types), and retry logic with exponential backoff for production-grade reliability.'
       ]
     },
     {
